@@ -13,10 +13,17 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->string('kode_admin')->unique()->nullable();
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('role')->default('mahasiswa');
+            
+            // KOLOM BARU DITAMBAHKAN DI SINI
+            $table->string('kelas')->nullable();
+            $table->string('kelompok')->nullable();
+
             $table->rememberToken();
             $table->timestamps();
         });

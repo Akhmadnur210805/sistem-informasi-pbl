@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Login - Sistem Informasi PBL</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    {{-- Link untuk Bootstrap Icons --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         body {
             height: 100vh;
@@ -18,14 +20,14 @@
         .login-box {
             width: 100%;
             max-width: 380px;
-            background: rgba(255, 255, 255, 0.2); /* transparan */
+            background: rgba(255, 255, 255, 0.2);
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0px 8px 25px rgba(0,0,0,0.25);
-            backdrop-filter: blur(12px); /* efek blur glassmorphism */
+            backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3); /* garis tipis elegan */
-            color: #fff; /* teks default putih */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
         }
         .login-box img {
             display: block;
@@ -37,12 +39,13 @@
         .login-box .form-label,
         .login-box .alert,
         .login-box ul li {
-            color: #fff !important; /* pastikan semua teks putih */
+            color: #fff !important;
         }
         .form-control {
             background: rgba(255, 255, 255, 0.15);
             border: 1px solid rgba(255,255,255,0.4);
             color: #fff;
+            padding-right: 40px; /* Memberi ruang untuk ikon mata */
         }
         .form-control:focus {
             background: rgba(255, 255, 255, 0.25);
@@ -59,6 +62,17 @@
         }
         .btn-primary:hover {
             background-color: #0b5ed7;
+        }
+        /* Style untuk ikon mata */
+        .password-container {
+            position: relative;
+        }
+        .password-toggle-icon {
+            position: absolute;
+            top: 38px;
+            right: 10px;
+            cursor: pointer;
+            z-index: 100;
         }
     </style>
 </head>
@@ -81,16 +95,37 @@
         <form action="{{ url('/login') }}" method="POST">
             @csrf
             <div class="mb-3">
-                <label for="kode_admin" class="form-label">Nim/Nip/Admin/Pengelola</label>
+                <label for="kode_admin" class="form-label">Mahasiswa/Dosen/Admin/Pengelola</label>
                 <input type="text" name="kode_admin" class="form-control" placeholder="Masukkan kode" required autofocus>
             </div>
-            <div class="mb-3">
+            
+            {{-- Bagian Password yang dimodifikasi --}}
+            <div class="mb-3 password-container">
                 <label for="password" class="form-label">Kata Sandi</label>
-                <input type="password" name="password" class="form-control" placeholder="Masukkan kata sandi" required>
+                <input type="password" name="password" id="password" class="form-control" placeholder="Masukkan kata sandi" required>
+                <span class="password-toggle-icon">
+                    <i class="bi bi-eye-slash" id="togglePasswordIcon"></i>
+                </span>
             </div>
+            
             <button type="submit" class="btn btn-primary w-100">Masuk</button>
         </form>
     </div>
+
+<script>
+    const togglePasswordIcon = document.querySelector('#togglePasswordIcon');
+    const passwordInput = document.querySelector('#password');
+
+    togglePasswordIcon.parentElement.addEventListener('click', function () {
+        // Toggle tipe input
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        // Ganti ikon mata
+        togglePasswordIcon.classList.toggle('bi-eye');
+        togglePasswordIcon.classList.toggle('bi-eye-slash');
+    });
+</script>
 
 </body>
 </html>
