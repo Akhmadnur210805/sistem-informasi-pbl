@@ -20,9 +20,13 @@ return new class extends Migration
             $table->string('password');
             $table->string('role')->default('mahasiswa');
             
-            // KOLOM BARU DITAMBAHKAN DI SINI
+            // KOLOM YANG SUDAH ADA
             $table->string('kelas')->nullable();
             $table->string('kelompok')->nullable();
+            $table->string('status')->nullable(); // Status untuk Dosen
+
+            // KOLOM BARU DITAMBAHKAN DI SINI
+            $table->string('jenis_pengelola')->nullable(); // Jenis untuk Pengelola
 
             $table->rememberToken();
             $table->timestamps();

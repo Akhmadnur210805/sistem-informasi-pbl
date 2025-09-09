@@ -43,6 +43,13 @@
                             <input type="password" class="form-control" id="password" name="password">
                             <small class="form-text text-muted">Kosongkan jika tidak ingin mengubah password.</small>
                         </div>
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="Dosen Pengampu" {{ $dosen->status == 'Dosen Pengampu' ? 'selected' : '' }}>Dosen Pengampu</option>
+                                <option value="Dosen Penguji" {{ $dosen->status == 'Dosen Penguji' ? 'selected' : '' }}>Dosen Penguji</option>
+                            </select>
+                        </div>
 
                         <button type="submit" class="btn btn-primary">Update</button>
                         <a href="{{ route('admin.dosen.index') }}" class="btn btn-secondary">Batal</a>

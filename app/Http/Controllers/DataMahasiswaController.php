@@ -6,8 +6,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rule;
-use Illuminate\Http\RedirectResponse; // <-- TAMBAHKAN INI
 
 class DataMahasiswaController extends Controller
 {
@@ -31,7 +31,7 @@ class DataMahasiswaController extends Controller
     /**
      * Menyimpan data mahasiswa baru ke database.
      */
-    public function store(Request $request): RedirectResponse // <-- Tambahkan return type
+    public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'kode_admin' => 'required|string|max:255|unique:users',
@@ -39,7 +39,12 @@ class DataMahasiswaController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:5',
             'kelas' => 'required|string|max:255',
-            'kelompok' => 'required|string|max:255',
+            'kelompok' => ['required', 'string', 'max:255', function ($attribute, $value, $fail) use ($request) {
+                $count = User::where('kelas', $request->kelas)->where('kelompok', $value)->count();
+                if ($count >= 5) {
+                    $fail('Kelompok ' . $value . ' di kelas ' . $request->kelas . ' sudah penuh (Maksimal 5 anggota).');
+                }
+            }],
         ]);
 
         User::create([
@@ -54,23 +59,22 @@ class DataMahasiswaController extends Controller
 
         return redirect()->route('admin.mahasiswa.index')->with('success', 'Data mahasiswa berhasil ditambahkan.');
     }
-    
+
     /**
      * Menampilkan formulir untuk mengedit data mahasiswa.
      */
-    public function edit(User $mahasiswa): View|RedirectResponse // <-- PERBAIKI DI SINI
+    public function edit(User $mahasiswa): View|RedirectResponse
     {
         if ($mahasiswa->role !== 'mahasiswa') {
             return redirect()->route('admin.mahasiswa.index')->with('error', 'Data yang dipilih bukan data mahasiswa.');
         }
-
         return view('admin.mahasiswa.edit', ['mahasiswa' => $mahasiswa]);
     }
 
     /**
      * Memperbarui data mahasiswa di database.
      */
-    public function update(Request $request, User $mahasiswa): RedirectResponse // <-- Tambahkan return type
+    public function update(Request $request, User $mahasiswa): RedirectResponse
     {
         $request->validate([
             'kode_admin' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($mahasiswa->id)],
@@ -78,7 +82,15 @@ class DataMahasiswaController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($mahasiswa->id)],
             'password' => 'nullable|string|min:5',
             'kelas' => 'required|string|max:255',
-            'kelompok' => 'required|string|max:255',
+            'kelompok' => ['required', 'string', 'max:255', function ($attribute, $value, $fail) use ($request, $mahasiswa) {
+                $count = User::where('kelas', $request->kelas)
+                             ->where('kelompok', $value)
+                             ->where('id', '!=', $mahasiswa->id)
+                             ->count();
+                if ($count >= 5) {
+                    $fail('Kelompok ' . $value . ' di kelas ' . $request->kelas . ' sudah penuh (Maksimal 5 anggota).');
+                }
+            }],
         ]);
 
         $dataToUpdate = [
@@ -101,7 +113,7 @@ class DataMahasiswaController extends Controller
     /**
      * Menghapus data mahasiswa dari database.
      */
-    public function destroy(User $mahasiswa): RedirectResponse // <-- Tambahkan return type
+    public function destroy(User $mahasiswa): RedirectResponse
     {
         if ($mahasiswa->role !== 'mahasiswa') {
             return back()->with('error', 'Data yang dipilih bukan data mahasiswa.');

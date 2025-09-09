@@ -1,9 +1,9 @@
-@extends('layout_admin.app')
+@extends('layout_dosen.app')
 
 @section('content-header')
     <div class="row">
         <div class="col-sm-6">
-            <h3 class="mb-0">Dashboard</h3>
+            <h3 class="mb-0">Dashboard Dosen</h3>
         </div>
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-end">
@@ -16,38 +16,17 @@
 
 @section('content')
     <div class="row">
-        {{-- Info Box Jumlah Mahasiswa --}}
-        <div class="col-lg-3 col-6">
+        {{-- Info Boxes --}}
+        <div class="col-lg-4 col-6">
             <div class="small-box text-white bg-primary">
                 <div class="inner">
                     <h3>{{ $jumlahMahasiswa }}</h3>
                     <p>Jumlah Mahasiswa</p>
                 </div>
-                <div class="icon"><i class="bi bi-person-bounding-box"></i></div>
+                <div class="icon"><i class="bi bi-person-fill"></i></div>
             </div>
         </div>
-        {{-- Info Box Jumlah Dosen --}}
-        <div class="col-lg-3 col-6">
-            <div class="small-box text-white bg-success">
-                <div class="inner">
-                    <h3>{{ $jumlahDosen }}</h3>
-                    <p>Jumlah Dosen</p>
-                </div>
-                <div class="icon"><i class="bi bi-person-vcard"></i></div>
-            </div>
-        </div>
-        {{-- Info Box Jumlah Pengelola --}}
-        <div class="col-lg-3 col-6">
-            <div class="small-box text-white bg-info">
-                <div class="inner">
-                    <h3>{{ $jumlahPengelola }}</h3>
-                    <p>Jumlah Pengelola</p>
-                </div>
-                <div class="icon"><i class="bi bi-person-gear"></i></div>
-            </div>
-        </div>
-        {{-- Info Box Jumlah Kelompok --}}
-        <div class="col-lg-3 col-6">
+        <div class="col-lg-4 col-6">
             <div class="small-box text-white bg-danger">
                 <div class="inner">
                     <h3>{{ $jumlahKelompok }}</h3>
@@ -56,46 +35,24 @@
                 <div class="icon"><i class="bi bi-people-fill"></i></div>
             </div>
         </div>
-    </div>
-
-    <div class="row">
-        {{-- Card Ranking Kelompok --}}
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header"><h3 class="card-title">Ranking Kelompok Terbaik</h3></div>
-                <div class="card-body p-0">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th style="width: 10px">#</th>
-                                <th>Kelompok</th>
-                                <th>Kelas</th>
-                                <th style="width: 40px">Nilai</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($rankedKelompoks as $kelompok)
-                                <tr>
-                                    <td>{{ $loop->iteration }}.</td>
-                                    <td>{{ $kelompok->kelompok }}</td>
-                                    <td>{{ $kelompok->kelas }}</td>
-                                    <td><span class="badge text-bg-success">{{ number_format($kelompok->rata_rata_nilai, 0) }}</span></td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="4" class="text-center">Belum ada data kelompok.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+        <div class="col-lg-4 col-6">
+            <div class="small-box text-white bg-warning">
+                <div class="inner">
+                    <h3>{{ $jumlahMataKuliah }}</h3>
+                    <p>Jumlah Mata Kuliah</p>
                 </div>
+                <div class="icon"><i class="bi bi-book"></i></div>
             </div>
         </div>
-
+    </div>
+    
+    <div class="row">
         {{-- Card Ranking Mahasiswa --}}
         <div class="col-lg-6">
             <div class="card">
                 <div class="card-header"><h3 class="card-title">Ranking Mahasiswa Terbaik</h3></div>
                 <div class="card-body p-0">
-                    <table class="table table-striped">
+                    <table class="table table-striped table-hover">
                         <thead>
                             <tr>
                                 <th style="width: 10px">#</th>
@@ -114,6 +71,37 @@
                                 </tr>
                             @empty
                                 <tr><td colspan="4" class="text-center">Belum ada data mahasiswa.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {{-- Card Ranking Kelompok --}}
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">Ranking Kelompok Terbaik</h3></div>
+                <div class="card-body p-0">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th style="width: 10px">#</th>
+                                <th>Kelompok</th>
+                                <th>Kelas</th>
+                                <th style="width: 40px">Nilai</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                             @forelse ($rankedKelompoks as $kelompok)
+                                <tr>
+                                    <td>{{ $loop->iteration }}.</td>
+                                    <td>{{ $kelompok->kelompok }}</td>
+                                    <td>{{ $kelompok->kelas }}</td>
+                                    <td><span class="badge text-bg-success">{{ number_format($kelompok->rata_rata_nilai, 0) }}</span></td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="4" class="text-center">Belum ada data kelompok.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

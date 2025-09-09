@@ -18,6 +18,8 @@ class User extends Authenticatable
         'role',
         'kelas',    // <-- Tambahkan ini
         'kelompok', // <-- Tambahkan ini
+        'status',
+        'jenis_pengelola',
     ];
 
     protected $hidden = [

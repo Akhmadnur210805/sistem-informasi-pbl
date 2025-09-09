@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\DB; // <-- Penting: Tambahkan ini
+use App\Models\User;
+use App\Models\MataKuliah;
+use Illuminate\Support\Facades\DB;
 
-class AdminController extends Controller
+class DosenDashboardController extends Controller
 {
     public function index(): View
     {
-        // --- Menghitung data untuk Info Boxes ---
+        // Data untuk Info Boxes
         $jumlahMahasiswa = User::where('role', 'mahasiswa')->count();
-        $jumlahDosen = User::where('role', 'dosen')->count();
-        $jumlahPengelola = User::where('role', 'pengelola')->count();
+        $jumlahMataKuliah = MataKuliah::count();
         $jumlahKelompok = User::where('role', 'mahasiswa')
                             ->whereNotNull('kelompok')
                             ->select('kelompok', 'kelas')
@@ -22,7 +22,7 @@ class AdminController extends Controller
                             ->get()
                             ->count();
 
-        // --- Mengambil data untuk Ranking Mahasiswa (Top 4) ---
+        // Data untuk Tabel Ranking
         $rankedMahasiswas = User::where('role', 'mahasiswa')
             ->leftJoin('penilaians', 'users.id', '=', 'penilaians.user_id')
             ->select('users.id', 'users.name', 'users.kelas', DB::raw('AVG(penilaians.nilai) as rata_rata_nilai'))
@@ -30,8 +30,7 @@ class AdminController extends Controller
             ->orderByDesc('rata_rata_nilai')
             ->take(4)
             ->get();
-
-        // --- Mengambil data untuk Ranking Kelompok (Top 4) ---
+        
         $rankedKelompoks = User::where('role', 'mahasiswa')
             ->whereNotNull('kelompok')
             ->leftJoin('penilaians', 'users.id', '=', 'penilaians.user_id')
@@ -40,12 +39,10 @@ class AdminController extends Controller
             ->orderByDesc('rata_rata_nilai')
             ->take(4)
             ->get();
-    
-        // --- Mengirim semua data ke view ---
-        return view('admin.dashboard', [
+
+        return view('dosen.dashboard', [
             'jumlahMahasiswa' => $jumlahMahasiswa,
-            'jumlahDosen' => $jumlahDosen,
-            'jumlahPengelola' => $jumlahPengelola,
+            'jumlahMataKuliah' => $jumlahMataKuliah,
             'jumlahKelompok' => $jumlahKelompok,
             'rankedMahasiswas' => $rankedMahasiswas,
             'rankedKelompoks' => $rankedKelompoks,

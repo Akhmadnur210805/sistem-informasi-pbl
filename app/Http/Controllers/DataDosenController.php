@@ -29,6 +29,7 @@ class DataDosenController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:5',
+            'status' => 'required|string',
         ]);
 
         User::create([
@@ -37,6 +38,7 @@ class DataDosenController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => 'dosen',
+            'status' => $request->status,
         ]);
 
         return redirect()->route('admin.dosen.index')->with('success', 'Data dosen berhasil ditambahkan.');
@@ -58,12 +60,14 @@ class DataDosenController extends Controller
             'name' => 'required|string|max:255',
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($dosen->id)],
             'password' => 'nullable|string|min:5',
+            'status' => 'required|string',
         ]);
 
         $dataToUpdate = [
             'kode_admin' => $request->kode_admin,
             'name' => $request->name,
             'email' => $request->email,
+            'status' => $request->status,
         ];
 
         if ($request->filled('password')) {

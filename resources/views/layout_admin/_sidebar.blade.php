@@ -44,26 +44,26 @@
                 
                 {{-- Menu Data Mata Kuliah --}}
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon bi bi-book-fill"></i>
-                        <p>Data Mata Kuliah</p>
-                    </a>
+                <a href="{{ route('admin.matakuliah.index') }}" class="nav-link {{ request()->routeIs('admin.matakuliah.*') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-book-fill"></i>
+                <p>Data Mata Kuliah</p>
+                </a>
                 </li>
                 
                 {{-- Menu Data Kelompok --}}
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon bi bi-people-fill"></i>
-                        <p>Data Kelompok</p>
-                    </a>
+                <a href="{{ route('admin.kelompok.index') }}" class="nav-link {{ request()->routeIs('admin.kelompok.index') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-people-fill"></i>
+                <p>Data Kelompok</p>
+                </a>
                 </li>
 
                 {{-- Menu Ranking --}}
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon bi bi-bar-chart-line-fill"></i>
-                        <p>Ranking</p>
-                    </a>
+                <a href="{{ route('admin.ranking.index') }}" class="nav-link {{ request()->routeIs('admin.ranking.index') ? 'active' : '' }}">
+                <i class="nav-icon bi bi-bar-chart-line-fill"></i>
+                <p>Ranking</p>
+                </a>
                 </li>
 
                 {{-- Tombol Logout --}}
