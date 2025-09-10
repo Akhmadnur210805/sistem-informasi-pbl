@@ -11,6 +11,9 @@ use App\Http\Controllers\DataKelompokController;
 use App\Http\Controllers\DataMataKuliahController;
 use App\Http\Controllers\DosenDashboardController;
 use App\Http\Controllers\DosenPenilaianController;
+use App\Http\Controllers\PengelolaDashboardController;
+use App\Http\Controllers\RekapNilaiController;
+use App\Http\Controllers\PengelolaViewController;
 use App\Http\Controllers\RankingController;
 
 
@@ -34,6 +37,21 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard_admin', [AdminController::class, 'index'])->name('admin.dashboard');
     Route::get('/dashboard_dosen', [DosenDashboardController::class, 'index'])->name('dosen.dashboard');
     Route::get('/dashboard_mahasiswa', [MahasiswaController::class, 'index'])->name('mahasiswa.dashboard');
+
+
+    // Rute Dashboard Pengelola
+    Route::get('/dashboard_pengelola', [PengelolaDashboardController::class, 'index'])->name('pengelola.dashboard');
+
+    // Rute Rekap Nilai Pengelola
+    Route::get('/pengelola/rekap-nilai', [RekapNilaiController::class, 'index'])->name('pengelola.rekap_nilai.index');
+
+    // Rute Ranking Pengelola
+    Route::get('/pengelola/ranking', [RankingController::class, 'index'])->name('pengelola.ranking.index');
+
+    // Rute Read-Only untuk Pengelola
+    Route::get('/pengelola/data-mahasiswa', [PengelolaViewController::class, 'showMahasiswa'])->name('pengelola.mahasiswa.index');
+    Route::get('/pengelola/data-dosen', [PengelolaViewController::class, 'showDosen'])->name('pengelola.dosen.index');
+
 
 
     // --- Grup untuk rute dosen ---

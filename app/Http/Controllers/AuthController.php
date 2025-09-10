@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Http\RedirectResponse; // <-- Tambahkan ini
 
 class AuthController extends Controller
 {
@@ -30,7 +30,7 @@ class AuthController extends Controller
     /**
      * Handle a registration request for the application.
      */
-    public function register(Request $request)
+    public function register(Request $request): RedirectResponse
     {
         // Validasi input
         $request->validate([
@@ -59,7 +59,7 @@ class AuthController extends Controller
     /**
      * Handle a login request to the application.
      */
-    public function login(Request $request)
+    public function login(Request $request): RedirectResponse
     {
         // Validasi input
         $credentials = $request->validate([
@@ -84,6 +84,9 @@ class AuthController extends Controller
             } elseif ($user->role == 'pengelola') {
                 return redirect()->intended('/dashboard_pengelola');
             }
+            // Fallback jika role tidak terdefinisi
+            Auth::logout();
+            return redirect('/login');
         }
 
         // Jika gagal login
@@ -95,7 +98,7 @@ class AuthController extends Controller
     /**
      * Log the user out of the application.
      */
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
 
