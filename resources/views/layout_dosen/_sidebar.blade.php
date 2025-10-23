@@ -25,19 +25,35 @@
 
                  {{-- Menu Penilaian --}}
                 <li class="nav-item">
-                    <a href="{{ route('dosen.penilaian.index') }}" class="nav-link {{ request()->routeIs('dosen.penilaian.index') ? 'active' : '' }}">
+                    <a href="{{ route('dosen.penilaian.index') }}" class="nav-link {{ request()->routeIs('dosen.penilaian.index', 'dosen.penilaian.form') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-card-checklist"></i>
                         <p>Penilaian</p>
                     </a>
                 </li>
 
-                {{-- MENU BARU: Ranking --}}
+                {{-- Menu Ranking --}}
                 <li class="nav-item">
                     <a href="{{ route('dosen.ranking.index') }}" class="nav-link {{ request()->routeIs('dosen.ranking.index') ? 'active' : '' }}">
                         <i class="nav-icon bi bi-bar-chart-line-fill"></i>
                         <p>Ranking</p>
                     </a>
                 </li>
+
+                {{-- BAGIAN BARU UNTUK REKAPITULASI --}}
+                <li class="nav-header">REKAPITULASI</li>
+                <li class="nav-item">
+                    <a href="{{ route('dosen.rekap.logbook') }}" class="nav-link {{ request()->routeIs('dosen.rekap.logbook') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-book-half"></i>
+                        <p>Rekap Logbook</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('dosen.rekap.penilaian_sejawat') }}" class="nav-link {{ request()->routeIs('dosen.rekap.penilaian_sejawat') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-person-check-fill"></i>
+                        <p>Rekap Penilaian Sejawat</p>
+                    </a>
+                </li>
+                {{-- AKHIR BAGIAN BARU --}}
 
                 {{-- Tombol Logout --}}
                 <li class="nav-item">

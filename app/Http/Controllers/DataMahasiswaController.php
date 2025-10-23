@@ -8,6 +8,8 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rule;
+use App\Imports\MahasiswaImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DataMahasiswaController extends Controller
 {
@@ -16,7 +18,10 @@ class DataMahasiswaController extends Controller
      */
     public function index(): View
     {
+        // Query untuk mengambil data pengguna dengan role 'mahasiswa'
         $mahasiswas = User::where('role', 'mahasiswa')->get();
+
+        // Mengirim data ke view
         return view('admin.mahasiswa.index', ['mahasiswas' => $mahasiswas]);
     }
 
@@ -26,6 +31,25 @@ class DataMahasiswaController extends Controller
     public function create(): View
     {
         return view('admin.mahasiswa.create');
+    }
+
+    /**
+     * Mengimpor data mahasiswa dari file Excel.
+     */
+    public function importExcel(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'file_excel' => 'required|mimes:xlsx,xls,csv',
+        ]);
+
+        try {
+            Excel::import(new MahasiswaImport, $request->file('file_excel'));
+        } catch (\Exception $e) {
+            // Jika terjadi error saat import, kembalikan dengan pesan error
+            return back()->withErrors(['file_excel' => 'Terjadi kesalahan saat mengimpor file. Pastikan format file dan headernya benar. Error: ' . $e->getMessage()]);
+        }
+
+        return redirect()->route('admin.mahasiswa.index')->with('success', 'Data mahasiswa berhasil diimpor!');
     }
 
     /**
@@ -52,7 +76,7 @@ class DataMahasiswaController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'mahasiswa',
+            'role' => 'mahasiswa', // Set role secara otomatis
             'kelas' => $request->kelas,
             'kelompok' => $request->kelompok,
         ]);

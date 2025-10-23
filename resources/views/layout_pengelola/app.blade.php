@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="{{ asset('AdminLTE/dist/css/adminlte.css') }}" />
+    @yield('styles')
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Sistem Informasi PBL | Pengelola</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

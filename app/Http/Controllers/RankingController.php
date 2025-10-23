@@ -48,6 +48,10 @@ class RankingController extends Controller
             return view('pengelola.ranking.index', $data);
         }
 
+        if (Auth::user()->role == 'mahasiswa') {
+            return view('mahasiswa.ranking.index', $data);
+        }
+
         // Fallback
         return redirect()->back();
     }

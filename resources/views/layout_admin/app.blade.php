@@ -50,6 +50,8 @@
     
     <script src="{{ asset('AdminLTE/dist/js/adminlte.js') }}"></script>
     
-    @yield('scripts')
+    {{-- BAGIAN INI YANG DIPERBAIKI (yield diubah menjadi stack) --}}
+    @stack('scripts')
+
 </body>
 </html>

@@ -4,63 +4,78 @@ namespace App\Http\Controllers;
 
 use App\Models\MataKuliah;
 use App\Models\User;
-use App\Models\Penilaian; // <-- Tambahkan ini
+use App\Models\Penilaian;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse; // <-- Tambahkan ini
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DosenPenilaianController extends Controller
 {
     public function index(): View
     {
-        $mataKuliahs = MataKuliah::orderBy('kode_mk', 'asc')->get();
-        return view('dosen.penilaian.index', ['mataKuliahs' => $mataKuliahs]);
+        $dosen = Auth::user();
+        $penugasans = $dosen->mataKuliahs;
+        return view('dosen.penilaian.index', ['penugasans' => $penugasans]);
     }
 
-    public function showPenilaianForm(MataKuliah $matakuliah): View
+    public function showPenilaianForm(MataKuliah $matakuliah, $kelas): View
     {
+        $dosen_id = Auth::id();
+
+        $isAuthorized = DB::table('dosen_matakuliah')
+            ->where('user_id', $dosen_id)
+            ->where('mata_kuliah_id', $matakuliah->id)
+            ->whereRaw('UPPER(kelas) = ?', [strtoupper($kelas)])
+            ->exists();
+
+        if (!$isAuthorized) {
+            abort(403, 'ANDA TIDAK BERHAK MENGAKSES HALAMAN INI.');
+        }
+
         $mahasiswas = User::where('role', 'mahasiswa')
-                            ->whereNotNull('kelompok')
-                            ->orderBy('kelas', 'asc')
+                            ->where('kelas', $kelas)
                             ->orderBy('kelompok', 'asc')
                             ->get();
 
-        $kelompoks = $mahasiswas->groupBy(['kelas', 'kelompok']);
+        $kelompoks = $mahasiswas->groupBy('kelompok');
 
         return view('dosen.penilaian.form', [
             'matakuliah' => $matakuliah,
+            'kelas' => $kelas,
             'kelompoks' => $kelompoks
         ]);
     }
 
-    /**
-     * Menyimpan data penilaian ke database. (FUNGSI BARU)
-     */
-    public function storePenilaian(Request $request, MataKuliah $matakuliah): RedirectResponse
+    public function storePenilaian(Request $request, MataKuliah $matakuliah, $kelas): RedirectResponse
     {
-        // Validasi input: pastikan 'nilai' adalah array, dan setiap isinya adalah angka 0-100
+        $dosen_id = Auth::id();
+        
+        $isAuthorized = DB::table('dosen_matakuliah')
+            ->where('user_id', $dosen_id)
+            ->where('mata_kuliah_id', $matakuliah->id)
+            ->whereRaw('UPPER(kelas) = ?', [strtoupper($kelas)])
+            ->exists();
+
+        if (!$isAuthorized) {
+            abort(403, 'ANDA TIDAK BERHAK MENYIMPAN NILAI UNTUK PENUGASAN INI.');
+        }
+        
         $request->validate([
             'nilai' => 'required|array',
             'nilai.*' => 'nullable|integer|min:0|max:100',
         ]);
 
-        // Looping untuk setiap nilai yang dikirim dari form
         foreach ($request->nilai as $mahasiswaId => $nilai) {
-            // Hanya simpan jika nilainya tidak kosong
             if (!is_null($nilai)) {
-                // Gunakan updateOrCreate untuk membuat nilai baru atau memperbarui jika sudah ada
                 Penilaian::updateOrCreate(
-                    [
-                        'user_id' => $mahasiswaId,
-                        'mata_kuliah_id' => $matakuliah->id,
-                    ],
-                    [
-                        'nilai' => $nilai,
-                    ]
+                    ['user_id' => $mahasiswaId, 'mata_kuliah_id' => $matakuliah->id],
+                    ['nilai' => $nilai]
                 );
             }
         }
 
-        return redirect()->route('dosen.penilaian.index')->with('success', 'Nilai untuk mata kuliah ' . $matakuliah->nama_mk . ' berhasil disimpan.');
+        return redirect()->route('dosen.penilaian.index')->with('success', 'Nilai untuk ' . $matakuliah->nama_mk . ' di kelas ' . $kelas . ' berhasil disimpan.');
     }
 }
