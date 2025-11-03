@@ -53,7 +53,7 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        // Logika Validasi Domain yang Lebih Ringkas
+
         $email = $credentials['email'];
         $allowedDomains = ['@mhs.politala.ac.id', '@politala.ac.id'];
         $specialEmails = ['admin@example.com'];
@@ -129,3 +129,6 @@ class AuthController extends Controller
         return redirect('/login');
     }
 }
+
+
+

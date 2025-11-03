@@ -18,7 +18,8 @@ use App\Http\Controllers\RekapNilaiController;
 use App\Http\Controllers\TugasController;
 use App\Http\Controllers\LogbookController;
 use App\Http\Controllers\PeerReviewController;
-use App\Http\Controllers\DosenRekapController; // <-- Tambahkan ini
+use App\Http\Controllers\DosenRekapController;
+use App\Http\Controllers\Auth\GoogleLoginController; // <-- INI DITAMBAHKAN
 
 // Rute utama
 Route::get('/', function () {
@@ -31,8 +32,13 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-Route::get('google/login', [AuthController::class, 'redirectToGoogle'])->name('google.login');
-Route::get('/google/callback', [AuthController::class, 'handleGoogleCallback']);
+
+// --- INI RUTE GOOGLE YANG DIUBAH ---
+// Rute untuk mengarahkan ke Google
+Route::get('/auth/google', [GoogleLoginController::class, 'redirectToGoogle'])->name('google.login');
+// Rute untuk menangani callback dari Google
+Route::get('/auth/google/callback', [GoogleLoginController::class, 'handleGoogleCallback']);
+// -------------------------------------
 
 // --- Grup untuk semua rute yang memerlukan login ---
 Route::middleware(['auth'])->group(function () {

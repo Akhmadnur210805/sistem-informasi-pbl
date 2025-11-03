@@ -17,21 +17,25 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+
+            // --- PERUBAHAN UNTUK GOOGLE LOGIN ---
+            $table->string('password')->nullable(); // Titik koma (;) sudah diperbaiki
+            $table->string('google_id')->nullable(); // Kolom baru untuk Google ID
+            // -------------------------------------
+
             $table->string('role')->default('mahasiswa');
-            
+
             // KOLOM YANG SUDAH ADA
             $table->string('kelas')->nullable();
             $table->string('kelompok')->nullable();
             $table->string('status')->nullable(); // Status untuk Dosen
-
-            // KOLOM BARU DITAMBAHKAN DI SINI
             $table->string('jenis_pengelola')->nullable(); // Jenis untuk Pengelola
 
             $table->rememberToken();
             $table->timestamps();
         });
 
+        // Bagian di bawah ini sudah benar, biarkan saja
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
