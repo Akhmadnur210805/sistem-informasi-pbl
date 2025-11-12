@@ -53,4 +53,26 @@ class DosenRekapController extends Controller
 
         return view('dosen.rekap.penilaian_sejawat', ['mahasiswas' => $mahasiswas]);
     }
+
+
+    public function showDetailPenilaianSejawat($id): View
+    {
+        // 1. Ambil data mahasiswa yang ingin dilihat
+        $mahasiswa = User::where('role', 'mahasiswa')->findOrFail($id);
+
+        // 2. Ambil semua review yang DITERIMA oleh mahasiswa ini
+        //    Kita juga 'with('reviewer')' untuk mendapat NAMA yang memberi nilai
+        //    Relasi 'reviewer' ada di model PeerReview
+        $reviews = $mahasiswa->peerReviewsReceived() // Relasi dari model User
+                            ->with('reviewer')
+                            ->orderBy('minggu_ke', 'asc')
+                            ->orderBy('created_at', 'asc')
+                            ->get()
+                            ->groupBy('minggu_ke'); // Kelompokkan hasilnya per minggu
+
+        return view('dosen.rekap.penilaian_sejawat_detail', [
+            'mahasiswa' => $mahasiswa,
+            'reviewsPerMinggu' => $reviews,
+        ]);
+    }
 }

@@ -26,8 +26,13 @@
             </thead>
             <tbody>
                 @forelse ($mahasiswas as $mahasiswa)
-                <tr>
-                    <td><strong>{{ $mahasiswa->name }}</strong></td>
+                <td>
+                        <a href="{{ route('dosen.rekap.penilaian_sejawat_detail', $mahasiswa->id) }}"class="text-dark">
+                            <strong>{{ $mahasiswa->name }}</strong>
+                        </a>
+                    </td>
+                    {{-- AKHIR PERUBAHAN --}}
+                    
                     <td>{{ $mahasiswa->kelas }}</td>
                     <td>
                         @php

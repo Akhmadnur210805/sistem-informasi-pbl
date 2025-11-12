@@ -69,6 +69,10 @@ Route::middleware(['auth'])->group(function () {
         // Route baru untuk Rekap
         Route::get('/rekap-logbook', [DosenRekapController::class, 'rekapLogbook'])->name('rekap.logbook');
         Route::get('/rekap-penilaian-sejawat', [DosenRekapController::class, 'rekapPenilaianSejawat'])->name('rekap.penilaian_sejawat');
+        
+        // --- TAMBAHKAN RUTE INI ---
+        Route::get('/rekap-penilaian-sejawat/{id}', [DosenRekapController::class, 'showDetailPenilaianSejawat'])
+             ->name('rekap.penilaian_sejawat_detail');
     });
 
     // == RUTE KHUSUS PENGELOLA ==
