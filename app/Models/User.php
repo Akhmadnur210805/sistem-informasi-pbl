@@ -6,6 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+// Impor model yang dibutuhkan untuk relasi
+use App\Models\MataKuliah;
+use App\Models\Pengumpulan;
+use App\Models\Logbook;
+use App\Models\PeerReview;
+use App\Models\Penilaian;
+
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
@@ -29,7 +36,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * The attributes that are hidden for serialization.
      *
      * @var array<int, string>
      */
@@ -85,7 +92,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Mendapatkan semua logbook yang dibuat oleh user ini. (BARU)
+     * Mendapatkan semua logbook yang dibuat oleh user ini.
      */
     public function logbooks()
     {
@@ -93,10 +100,19 @@ class User extends Authenticatable
     }
 
     /**
-     * Mendapatkan semua penilaian sejawat yang DITERIMA oleh user ini. (BARU)
+     * Mendapatkan semua penilaian sejawat yang DITERIMA oleh user ini.
      */
     public function peerReviewsReceived()
     {
         return $this->hasMany(PeerReview::class, 'reviewed_id');
+    }
+
+    /**
+     * BARU: Mendapatkan semua nilai mata kuliah yang DITERIMA oleh user ini.
+     * (Relasi ini dibutuhkan oleh RankingController)
+     */
+    public function penilaians()
+    {
+        return $this->hasMany(Penilaian::class, 'user_id');
     }
 }
