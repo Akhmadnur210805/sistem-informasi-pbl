@@ -16,39 +16,46 @@
 @forelse ($mahasiswaPerKelompok as $kelas => $kelompoks)
     <h4 class="mt-4 mb-3">Kelas: {{ $kelas }}</h4>
     @foreach ($kelompoks as $namaKelompok => $mahasiswas)
-        <div class="card card-outline card-primary">
-            <div class="card-header"><h3 class="card-title">Kelompok {{ $namaKelompok }}</h3></div>
+        <div class="card card-outline card-primary mb-4">
+            <div class="card-header bg-light">
+                <h3 class="card-title"><strong>{{ $namaKelompok }}</strong></h3>
+            </div>
             <div class="card-body">
                 @foreach ($mahasiswas as $mahasiswa)
-                    <h5>{{ $mahasiswa->name }} <small>({{ $mahasiswa->kode_admin }})</small></h5>
-                    <table class="table table-sm table-bordered table-striped mb-4">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width: 10%;">Minggu Ke-</th>
-                                <th>Deskripsi</th>
-                                <th style="width: 15%;">File</th>
-                                <th style="width: 20%;">Tanggal Upload</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($mahasiswa->logbooks as $logbook)
-                            <tr>
-                                <td>{{ $logbook->minggu_ke }}</td>
-                                <td>{{ $logbook->deskripsi }}</td>
-                                <td>
-                                    @if ($logbook->file_path)
-                                        <a href="{{ asset('storage/' . $logbook->file_path) }}" target="_blank">Download</a>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                                <td>{{ $logbook->created_at->format('d M Y, H:i') }}</td>
-                            </tr>
-                            @empty
-                            <tr><td colspan="4" class="text-center">Belum ada logbook.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                    <div class="mb-4 border-bottom pb-3">
+                        <h5 class="text-primary">{{ $mahasiswa->name }} <small class="text-muted">({{ $mahasiswa->kode_admin }})</small></h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered table-striped">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 10%;">Minggu Ke-</th>
+                                        <th>Deskripsi</th>
+                                        <th style="width: 10%;">File</th>
+                                        <th style="width: 20%;">Tanggal Upload</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($mahasiswa->logbooks as $logbook)
+                                    <tr>
+                                        <td class="text-center">{{ $logbook->minggu_ke }}</td>
+                                        <td>{{ $logbook->deskripsi }}</td>
+                                        <td class="text-center">
+                                            @if ($logbook->file_path)
+                                                <a href="{{ asset('storage/' . $logbook->file_path) }}" target="_blank" class="btn btn-xs btn-info">Download</a>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        {{-- PERBAIKAN JAM DI SINI: Menambahkan setTimezone --}}
+                                        <td>{{ $logbook->created_at->setTimezone('Asia/Jakarta')->format('d M Y, H:i') }} WIB</td>
+                                    </tr>
+                                    @empty
+                                    <tr><td colspan="4" class="text-center text-muted">Belum ada logbook.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 @endforeach
             </div>
         </div>

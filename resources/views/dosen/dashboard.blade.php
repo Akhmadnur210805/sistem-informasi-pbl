@@ -16,7 +16,7 @@
 
 @section('content')
     <div class="row">
-        {{-- Info Boxes --}}
+        {{-- Info Box Jumlah Mahasiswa --}}
         <div class="col-lg-4 col-6">
             <div class="small-box text-white bg-primary">
                 <div class="inner">
@@ -26,6 +26,8 @@
                 <div class="icon"><i class="bi bi-person-fill"></i></div>
             </div>
         </div>
+
+        {{-- Info Box Jumlah Kelompok --}}
         <div class="col-lg-4 col-6">
             <div class="small-box text-white bg-danger">
                 <div class="inner">
@@ -35,6 +37,8 @@
                 <div class="icon"><i class="bi bi-people-fill"></i></div>
             </div>
         </div>
+
+        {{-- Info Box Jumlah Mata Kuliah --}}
         <div class="col-lg-4 col-6">
             <div class="small-box text-white bg-warning">
                 <div class="inner">
@@ -49,8 +53,8 @@
     <div class="row">
         {{-- Card Ranking Mahasiswa --}}
         <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header"><h3 class="card-title">Ranking Mahasiswa Terbaik</h3></div>
+            <div class="card card-outline card-primary">
+                <div class="card-header"><h3 class="card-title">Ranking Mahasiswa Terbaik (Top 5)</h3></div>
                 <div class="card-body p-0">
                     <table class="table table-striped table-hover">
                         <thead>
@@ -58,7 +62,7 @@
                                 <th style="width: 10px">#</th>
                                 <th>Nama Mahasiswa</th>
                                 <th>Kelas</th>
-                                <th style="width: 40px">Nilai</th>
+                                <th class="text-center">Nilai Akhir</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -66,11 +70,15 @@
                                 <tr>
                                     <td>{{ $loop->iteration }}.</td>
                                     <td>{{ $mahasiswa->name }}</td>
-                                    <td>{{ $mahasiswa->kelas }}</td>
-                                    <td><span class="badge text-bg-success">{{ number_format($mahasiswa->rata_rata_nilai, 0) }}</span></td>
+                                    <td>{{ $mahasiswa->kelas ?? '-' }}</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success fs-6">
+                                            {{ number_format($mahasiswa->skor_akhir, 2) }}
+                                        </span>
+                                    </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="4" class="text-center">Belum ada data mahasiswa.</td></tr>
+                                <tr><td colspan="4" class="text-center">Belum ada data penilaian.</td></tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -80,8 +88,8 @@
 
         {{-- Card Ranking Kelompok --}}
         <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header"><h3 class="card-title">Ranking Kelompok Terbaik</h3></div>
+            <div class="card card-outline card-danger">
+                <div class="card-header"><h3 class="card-title">Ranking Kelompok Terbaik (Top 5)</h3></div>
                 <div class="card-body p-0">
                     <table class="table table-striped table-hover">
                         <thead>
@@ -89,19 +97,23 @@
                                 <th style="width: 10px">#</th>
                                 <th>Kelompok</th>
                                 <th>Kelas</th>
-                                <th style="width: 40px">Nilai</th>
+                                <th class="text-center">Nilai Akhir</th>
                             </tr>
                         </thead>
                         <tbody>
-                             @forelse ($rankedKelompoks as $kelompok)
+                            @forelse ($rankedKelompoks as $kelompok)
                                 <tr>
                                     <td>{{ $loop->iteration }}.</td>
-                                    <td>{{ $kelompok->kelompok }}</td>
-                                    <td>{{ $kelompok->kelas }}</td>
-                                    <td><span class="badge text-bg-success">{{ number_format($kelompok->rata_rata_nilai, 0) }}</span></td>
+                                    <td>{{ $kelompok->kelompok ?? '-' }}</td>
+                                    <td>{{ $kelompok->kelas ?? '-' }}</td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success fs-6">
+                                            {{ number_format($kelompok->skor_akhir, 2) }}
+                                        </span>
+                                    </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="4" class="text-center">Belum ada data kelompok.</td></tr>
+                                <tr><td colspan="4" class="text-center">Belum ada data penilaian.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

@@ -53,6 +53,12 @@
                         <p>Rekap Penilaian Sejawat</p>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('dosen.penilaian_kelompok.index') }}" class="nav-link {{ request()->routeIs('dosen.penilaian_kelompok.index') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-collection-fill"></i>
+                        <p>Penilaian Kelompok</p>
+                    </a>
+                </li>
                 {{-- AKHIR BAGIAN BARU --}}
 
                 {{-- Tombol Logout --}}

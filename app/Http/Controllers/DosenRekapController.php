@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Logbook;
-use App\Models\PeerReview;
+use App\Models\PeerReview; // <-- Kita sudah panggil di sini
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -19,7 +19,6 @@ class DosenRekapController extends Controller
         $dosen = Auth::user();
 
         // 1. Ambil semua kelas unik yang diajar oleh dosen
-        // PERBAIKAN: Menggunakan 'kelas' bukan 'pivot_kelas'
         $kelasYangDiajar = $dosen->mataKuliahs()->distinct()->pluck('kelas');
 
         // 2. Ambil semua mahasiswa dari kelas-kelas tersebut
@@ -42,37 +41,36 @@ class DosenRekapController extends Controller
     {
         $dosen = Auth::user();
         
-        // PERBAIKAN: Menggunakan 'kelas' bukan 'pivot_kelas'
         $kelasYangDiajar = $dosen->mataKuliahs()->distinct()->pluck('kelas');
         
         $mahasiswas = User::where('role', 'mahasiswa')
                            ->whereIn('kelas', $kelasYangDiajar)
-                           ->with('peerReviewsReceived') // Menggunakan relasi baru
+                           ->with('peerReviewsReceived') 
                            ->orderBy('kelas')->orderBy('name')
                            ->get();
 
         return view('dosen.rekap.penilaian_sejawat', ['mahasiswas' => $mahasiswas]);
     }
 
-
-    public function showDetailPenilaianSejawat($id): View
+    /**
+     * Menampilkan detail penilaian sejawat untuk satu mahasiswa tertentu.
+     */
+    public function rekapPenilaianSejawatDetail($id): View
     {
         // 1. Ambil data mahasiswa yang ingin dilihat
         $mahasiswa = User::where('role', 'mahasiswa')->findOrFail($id);
 
         // 2. Ambil semua review yang DITERIMA oleh mahasiswa ini
-        //    Kita juga 'with('reviewer')' untuk mendapat NAMA yang memberi nilai
-        //    Relasi 'reviewer' ada di model PeerReview
-        $reviews = $mahasiswa->peerReviewsReceived() // Relasi dari model User
-                            ->with('reviewer')
-                            ->orderBy('minggu_ke', 'asc')
-                            ->orderBy('created_at', 'asc')
-                            ->get()
-                            ->groupBy('minggu_ke'); // Kelompokkan hasilnya per minggu
+        // PERBAIKAN: Hapus "\App\Models\" karena sudah di-use di atas
+        $reviews = PeerReview::where('reviewed_id', $id) 
+                    ->with('reviewer')
+                    ->orderBy('minggu_ke', 'asc')
+                    ->get()
+                    ->groupBy('minggu_ke');
 
         return view('dosen.rekap.penilaian_sejawat_detail', [
             'mahasiswa' => $mahasiswa,
-            'reviewsPerMinggu' => $reviews,
+            'reviewsPerWeek' => $reviews, 
         ]);
     }
 }

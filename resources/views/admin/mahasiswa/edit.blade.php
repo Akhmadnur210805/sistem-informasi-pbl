@@ -35,6 +35,12 @@
                             <input type="text" class="form-control" id="name" name="name" value="{{ $mahasiswa->name }}" required>
                         </div>
                         <div class="mb-3">
+                        <label for="angkatan" class="form-label">Angkatan</label>
+                        <input type="number" class="form-control" id="angkatan" name="angkatan" 
+                            value="{{ old('angkatan', $mahasiswa->angkatan ?? date('Y')) }}" 
+                            placeholder="Contoh: 2023" required>
+                    </div>
+                        <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
                             <input type="email" class="form-control" id="email" name="email" value="{{ $mahasiswa->email }}" required>
                         </div>

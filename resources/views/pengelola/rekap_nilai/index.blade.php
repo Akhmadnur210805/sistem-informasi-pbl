@@ -3,11 +3,11 @@
 @section('content-header')
     <div class="row">
         <div class="col-sm-6">
-            <h3 class="mb-0">Rekap Nilai Mahasiswa</h3>
+            <h3 class="mb-0">Rekap Nilai Akhir (SAW)</h3>
         </div>
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-end">
-                <li class="breadcrumb-item"><a href="{{ route('pengelola.dashboard') }}">Home</a></li>
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Rekap Nilai</li>
             </ol>
         </div>
@@ -15,85 +15,94 @@
 @endsection
 
 @section('content')
-    <div class="card">
+    <div class="card card-outline card-primary">
         <div class="card-header">
-            <h3 class="card-title">Filter Data</h3>
+            <h3 class="card-title">Filter & Export Data</h3>
         </div>
         <div class="card-body">
             <form action="{{ route('pengelola.rekap_nilai.index') }}" method="GET">
-                <div class="row">
-                    <div class="col-md-4">
-                        <label for="mata_kuliah_id" class="form-label">Mata Kuliah</label>
-                        <select name="mata_kuliah_id" id="mata_kuliah_id" class="form-select">
-                            <option value="">Semua Mata Kuliah</option>
-                            @foreach ($mataKuliahs as $mk)
-                                <option value="{{ $mk->id }}" {{ $selectedMataKuliahId == $mk->id ? 'selected' : '' }}>
-                                    {{ $mk->nama_mk }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                <div class="row g-3 align-items-end">
+                    
+                    {{-- FILTER ANGKATAN --}}
                     <div class="col-md-3">
-                        <label for="kelas" class="form-label">Kelas</label>
-                        <select name="kelas" id="kelas" class="form-select">
-                            <option value="">Semua Kelas</option>
-                            @foreach ($kelasList as $kelas)
-                                <option value="{{ $kelas }}" {{ $selectedKelas == $kelas ? 'selected' : '' }}>
-                                    {{ $kelas }}
+                        <label class="form-label">Pilih Angkatan</label>
+                        <select name="angkatan" class="form-select">
+                            <option value="Semua Angkatan">Semua Angkatan</option>
+                            @foreach ($angkatanList as $thn)
+                                <option value="{{ $thn }}" {{ $selectedAngkatan == $thn ? 'selected' : '' }}>
+                                    {{ $thn }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
-                    {{-- DROPDOWN FILTER BARU UNTUK KELOMPOK --}}
+
+                    {{-- FILTER KELAS --}}
                     <div class="col-md-3">
-                        <label for="kelompok" class="form-label">Kelompok</label>
-                        <select name="kelompok" id="kelompok" class="form-select">
-                            <option value="">Semua Kelompok</option>
-                            @foreach ($kelompokList as $kelompok)
-                                <option value="{{ $kelompok }}" {{ $selectedKelompok == $kelompok ? 'selected' : '' }}>
-                                    {{ $kelompok }}
+                        <label class="form-label">Pilih Kelas</label>
+                        <select name="kelas" class="form-select">
+                            <option value="Semua Kelas">Semua Kelas</option>
+                            @foreach ($kelasList as $k)
+                                <option value="{{ $k }}" {{ $selectedKelas == $k ? 'selected' : '' }}>
+                                    Kelas {{ $k }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100">Filter</button>
+
+                    {{-- TOMBOL FILTER --}}
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-filter"></i> Filter
+                        </button>
+                    </div>
+
+                    {{-- TOMBOL DOWNLOAD PDF --}}
+                    <div class="col-md-3 ms-auto">
+                        <a href="{{ route('pengelola.rekap_nilai.download', ['kelas' => $selectedKelas, 'angkatan' => $selectedAngkatan]) }}" target="_blank" class="btn btn-danger w-100">
+                            <i class="bi bi-file-earmark-pdf-fill"></i> Download PDF
+                        </a>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="card mt-4">
-        <div class="card-header">
-            <h3 class="card-title">Hasil Rekap Nilai</h3>
-        </div>
+    <div class="card">
         <div class="card-body p-0">
-            <table class="table table-hover table-striped">
-                <thead>
+            <table class="table table-hover table-striped table-bordered text-center align-middle">
+                <thead class="table-dark">
                     <tr>
-                        <th>#</th>
-                        <th>NIM</th>
-                        <th>Nama Mahasiswa</th>
-                        <th>Kelas</th>
-                        <th>Kelompok</th> {{-- <-- Kolom Baru --}}
-                        <th>Nilai</th>
+                        <th style="width: 5%">#</th>
+                        <th style="width: 15%">NIM</th>
+                        <th class="text-start">Nama Mahasiswa</th>
+                        <th style="width: 10%">Angkatan</th>
+                        <th style="width: 10%">Kelas</th>
+                        <th style="width: 15%">Kelompok</th>
+                        <th style="width: 15%">Skor Individu</th>
+                        <th style="width: 15%">Skor Kelompok</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse ($rekapNilai as $nilai)
+                    @forelse ($mahasiswas as $mhs)
                         <tr>
                             <td>{{ $loop->iteration }}</td>
-                            <td>{{ $nilai->nim }}</td>
-                            <td>{{ $nilai->nama_mahasiswa }}</td>
-                            <td>{{ $nilai->kelas }}</td>
-                            <td>{{ $nilai->kelompok }}</td> {{-- <-- Data Baru --}}
-                            <td>{{ $nilai->nilai ?? 'Belum Dinilai' }}</td>
+                            <td>{{ $mhs->kode_admin }}</td>
+                            <td class="text-start">{{ $mhs->name }}</td>
+                            <td>{{ $mhs->angkatan ?? '-' }}</td>
+                            <td>{{ $mhs->kelas }}</td>
+                            <td>{{ $mhs->kelompok ?? '-' }}</td>
+                            <td>
+                                <span class="badge bg-primary fs-6">{{ $mhs->nilai_akhir_individu }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-success fs-6">{{ $mhs->nilai_akhir_kelompok }}</span>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center"> {{-- Colspan jadi 6 --}}
-                                Tidak ada data nilai yang ditemukan. Silakan sesuaikan filter Anda.
+                            <td colspan="8" class="text-center py-4 text-muted">
+                                <i class="bi bi-inbox display-6 d-block mb-2"></i>
+                                Data tidak ditemukan untuk filter ini.
                             </td>
                         </tr>
                     @endforelse

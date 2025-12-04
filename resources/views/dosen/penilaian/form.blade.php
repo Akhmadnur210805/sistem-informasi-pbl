@@ -9,7 +9,6 @@
             <ol class="breadcrumb float-sm-end">
                 <li class="breadcrumb-item"><a href="{{ route('dosen.dashboard') }}">Home</a></li>
                 <li class="breadcrumb-item"><a href="{{ route('dosen.penilaian.index') }}">Penilaian</a></li>
-                {{-- Menambahkan info kelas di breadcrumb --}}
                 <li class="breadcrumb-item active" aria-current="page">{{ $matakuliah->nama_mk }} (Kelas {{ $kelas }})</li>
             </ol>
         </div>
@@ -20,16 +19,13 @@
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">
-                {{-- Menampilkan info kelas di judul --}}
                 Penilaian untuk <strong>{{ $matakuliah->nama_mk }}</strong> - Kelas <strong>{{ $kelas }}</strong>
             </h3>
         </div>
         <div class="card-body">
-            {{-- ACTION FORM DIPERBAIKI UNTUK MENGIRIM PARAMETER 'kelas' --}}
             <form action="{{ route('dosen.penilaian.store', ['matakuliah' => $matakuliah->id, 'kelas' => $kelas]) }}" method="POST">
                 @csrf
 
-                {{-- LOOPING DIPERBAIKI: Langsung ke kelompok, tidak perlu grouping kelas lagi --}}
                 @forelse ($kelompoks as $namaKelompok => $anggotas)
                     <div class="card card-outline card-primary mb-4">
                         <div class="card-header">
@@ -40,19 +36,31 @@
                                 <thead class="table-secondary">
                                     <tr>
                                         <th style="width: 5%">No.</th>
-                                        <th style="width: 25%">NIM</th>
+                                        <th style="width: 20%">NIM</th>
                                         <th>Nama Mahasiswa</th>
-                                        <th style="width: 15%">Nilai</th>
+                                        <th style="width: 20%">Nilai Matkul (0-100)</th>
+                                        <th style="width: 20%">Nilai Presentasi (0-100)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($anggotas as $anggota)
+                                        @php
+                                            // Ambil data nilai jika sudah ada
+                                            $nilai = $nilaiSudahAda->get($anggota->id);
+                                        @endphp
                                         <tr>
                                             <td>{{ $loop->iteration }}</td>
                                             <td>{{ $anggota->kode_admin }}</td>
                                             <td>{{ $anggota->name }}</td>
                                             <td>
-                                                <input type="number" name="nilai[{{ $anggota->id }}]" class="form-control" min="0" max="100" placeholder="0-100">
+                                                {{-- Input Nilai Matkul --}}
+                                                <input type="number" name="nilai_matkul[{{ $anggota->id }}]" class="form-control" 
+                                                       value="{{ $nilai->nilai ?? '' }}" min="0" max="100" placeholder="0-100">
+                                            </td>
+                                            <td>
+                                                {{-- Input Nilai Presentasi --}}
+                                                <input type="number" name="nilai_presentasi[{{ $anggota->id }}]" class="form-control" 
+                                                       value="{{ $nilai->nilai_presentasi ?? '' }}" min="0" max="100" placeholder="0-100">
                                             </td>
                                         </tr>
                                     @endforeach

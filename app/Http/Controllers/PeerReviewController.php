@@ -11,33 +11,41 @@ use Illuminate\Http\RedirectResponse;
 
 class PeerReviewController extends Controller
 {
+    /**
+     * Menampilkan form penilaian sejawat beserta teman satu kelompok.
+     */
     public function index(): View
     {
         $user = Auth::user();
-        $teammates = collect();
+        $teammates = collect(); // Default collection kosong
 
+        // Hanya ambil teman sekelompok jika user punya kelompok
+        // Dan pastikan filter ANGKATAN agar tidak tercampur dengan angkatan lain
         if ($user->kelompok) {
             $teammates = User::where('role', 'mahasiswa')
                              ->where('kelas', $user->kelas)
                              ->where('kelompok', $user->kelompok)
-                             ->where('id', '!=', $user->id)
+                             ->where('angkatan', $user->angkatan) // <-- Pastikan filter angkatan ada
+                             ->where('id', '!=', $user->id) // Jangan tampilkan diri sendiri
                              ->get();
         }
 
-        // --- QUERY BARU UNTUK MENGAMBIL RIWAYAT ---
+        // Ambil riwayat penilaian
         $reviewHistory = PeerReview::where('reviewer_id', $user->id)
-                                   ->with('reviewed') // Mengambil nama teman yang dinilai
+                                   ->with('reviewed')
                                    ->orderBy('minggu_ke', 'desc')
                                    ->orderBy('created_at', 'desc')
                                    ->get();
-        // --- AKHIR QUERY BARU ---
 
         return view('mahasiswa.penilaian_sejawat.index', [
             'teammates' => $teammates,
-            'reviewHistory' => $reviewHistory, // Kirim data riwayat ke view
+            'reviewHistory' => $reviewHistory
         ]);
     }
 
+    /**
+     * Menyimpan data penilaian sejawat ke database.
+     */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
@@ -48,6 +56,7 @@ class PeerReviewController extends Controller
             'komentars.*' => 'nullable|string|max:500',
         ]);
 
+        // PERBAIKAN UTAMA: Gunakan Auth::user()->id untuk mengambil ANGKA ID
         $reviewerId = Auth::user()->id;
 
         foreach ($request->ratings as $reviewedId => $rating) {

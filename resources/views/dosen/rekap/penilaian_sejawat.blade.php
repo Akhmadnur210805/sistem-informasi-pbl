@@ -26,27 +26,26 @@
             </thead>
             <tbody>
                 @forelse ($mahasiswas as $mahasiswa)
-                <td>
-                        <a href="{{ route('dosen.rekap.penilaian_sejawat_detail', $mahasiswa->id) }}"class="text-dark">
-                            <strong>{{ $mahasiswa->name }}</strong>
-                        </a>
-                    </td>
-                    {{-- AKHIR PERUBAHAN --}}
-                    
-                    <td>{{ $mahasiswa->kelas }}</td>
-                    <td>
-                        @php
-                            // Menghitung rata-rata rating
-                            $avgRating = $mahasiswa->peerReviewsReceived->avg('rating');
-                        @endphp
-                        <span class="badge bg-primary fs-6">
-                            {{ number_format($avgRating, 2) }} / 5.00
-                        </span>
-                        <small class="text-muted"> (dari {{ $mahasiswa->peerReviewsReceived->count() }} penilaian)</small>
-                    </td>
-                </tr>
+                    <tr> {{-- <--- INI YANG HILANG TADI --}}
+                        <td>
+                            {{-- Link ke halaman detail --}}
+                            <a href="{{ route('dosen.rekap.penilaian_sejawat_detail', $mahasiswa->id) }}" class="text-decoration-none fw-bold text-dark">
+                                {{ $mahasiswa->name }} <i class="bi bi-box-arrow-up-right ms-1 text-muted" style="font-size: 0.8em;"></i>
+                            </a>
+                        </td>
+                        <td>{{ $mahasiswa->kelas }}</td>
+                        <td>
+                            @php
+                                $avgRating = $mahasiswa->peerReviewsReceived->avg('rating');
+                            @endphp
+                            <span class="badge bg-primary fs-6">
+                                {{ number_format($avgRating, 2) }} / 5.00
+                            </span>
+                            <small class="text-muted"> (dari {{ $mahasiswa->peerReviewsReceived->count() }} penilaian)</small>
+                        </td>
+                    </tr>
                 @empty
-                <tr><td colspan="3" class="text-center">Belum ada data penilaian sejawat.</td></tr>
+                    <tr><td colspan="3" class="text-center">Belum ada data penilaian sejawat.</td></tr>
                 @endforelse
             </tbody>
         </table>

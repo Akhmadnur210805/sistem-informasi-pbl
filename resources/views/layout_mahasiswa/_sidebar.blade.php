@@ -27,6 +27,13 @@
                         <p>Penilaian Sejawat</p>
                     </a>
                 </li>
+                {{-- MENU BARU: HASIL PENILAIAN --}}
+                <li class="nav-item">
+                    <a href="{{ route('mahasiswa.nilai.index') }}" class="nav-link {{ request()->routeIs('mahasiswa.nilai.index') ? 'active' : '' }}">
+                        <i class="nav-icon bi bi-journal-check"></i>
+                        <p>Transkip</p>
+                    </a>
+                </li>
                 {{-- AKHIR BAGIAN YANG DIPERBARUI --}}
 
                 <li class="nav-item">

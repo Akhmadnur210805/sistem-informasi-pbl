@@ -3,52 +3,48 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Models\MataKuliah;
+use App\Models\PenilaianKelompok;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\DB; // <-- Penting: Tambahkan ini
 
 class AdminController extends Controller
 {
     public function index(): View
     {
-        // --- Menghitung data untuk Info Boxes ---
-        $jumlahMahasiswa = User::where('role', 'mahasiswa')->count();
-        $jumlahDosen = User::where('role', 'dosen')->count();
-        $jumlahPengelola = User::where('role', 'pengelola')->count();
-        $jumlahKelompok = User::where('role', 'mahasiswa')
-                            ->whereNotNull('kelompok')
-                            ->select('kelompok', 'kelas')
-                            ->groupBy('kelompok', 'kelas')
-                            ->get()
-                            ->count();
+        $jumlahMahasiswa = User::where('role','mahasiswa')->count();
+        $jumlahDosen = User::where('role','dosen')->count();
+        $jumlahPengelola = User::where('role','pengelola')->count();
+        $jumlahMataKuliah = MataKuliah::count();
 
-        // --- Mengambil data untuk Ranking Mahasiswa (Top 4) ---
-        $rankedMahasiswas = User::where('role', 'mahasiswa')
-            ->leftJoin('penilaians', 'users.id', '=', 'penilaians.user_id')
-            ->select('users.id', 'users.name', 'users.kelas', DB::raw('AVG(penilaians.nilai) as rata_rata_nilai'))
-            ->groupBy('users.id', 'users.name', 'users.kelas')
-            ->orderByDesc('rata_rata_nilai')
-            ->take(4)
-            ->get();
+        $w_matkul = 0.50; $w_presentasi = 0.20; $w_sejawat = 0.30;
+        $w_proyek = 0.50; $w_kerjasama = 0.30; $w_pres_kel = 0.20;
 
-        // --- Mengambil data untuk Ranking Kelompok (Top 4) ---
-        $rankedKelompoks = User::where('role', 'mahasiswa')
-            ->whereNotNull('kelompok')
-            ->leftJoin('penilaians', 'users.id', '=', 'penilaians.user_id')
-            ->select('users.kelompok', 'users.kelas', DB::raw('AVG(penilaians.nilai) as rata_rata_nilai'))
-            ->groupBy('users.kelompok', 'users.kelas')
-            ->orderByDesc('rata_rata_nilai')
-            ->take(4)
-            ->get();
-    
-        // --- Mengirim semua data ke view ---
-        return view('admin.dashboard', [
-            'jumlahMahasiswa' => $jumlahMahasiswa,
-            'jumlahDosen' => $jumlahDosen,
-            'jumlahPengelola' => $jumlahPengelola,
-            'jumlahKelompok' => $jumlahKelompok,
-            'rankedMahasiswas' => $rankedMahasiswas,
-            'rankedKelompoks' => $rankedKelompoks,
-        ]);
+        $rankedMahasiswas = User::where('role','mahasiswa')
+            ->with(['penilaians','peerReviewsReceived'])
+            ->get()
+            ->map(function ($mhs) use ($w_matkul, $w_presentasi, $w_sejawat) {
+                $c1 = $mhs->penilaians->avg('nilai') ?? 0;
+                $c2 = $mhs->penilaians->avg('nilai_presentasi') ?? 0;
+                $c3 = ($mhs->peerReviewsReceived->avg('rating') ?? 0) * 20;
+
+                $mhs->skor_akhir = ($c1*$w_matkul)+($c2*$w_presentasi)+($c3*$w_sejawat);
+                return $mhs;
+            })->sortByDesc('skor_akhir')->take(5);
+
+        $rankedKelompoks = PenilaianKelompok::all()->groupBy(function($item){
+            return $item->kelas.'-'.$item->kelompok;
+        })->map(function ($group) use ($w_proyek,$w_kerjasama,$w_pres_kel){
+            $rep = $group->first();
+            $rep->skor_akhir =
+                ($group->avg('nilai_hasil_proyek')??0)*$w_proyek +
+                ($group->avg('nilai_kerja_sama')??0)*$w_kerjasama +
+                ($group->avg('nilai_presentasi_kelompok')??0)*$w_pres_kel;
+            return $rep;
+        })->sortByDesc('skor_akhir')->take(5);
+
+        return view('admin.dashboard', compact(
+            'jumlahMahasiswa','jumlahDosen','jumlahPengelola',
+            'jumlahMataKuliah','rankedMahasiswas','rankedKelompoks'
+        ));
     }
 }
