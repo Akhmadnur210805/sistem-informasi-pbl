@@ -155,4 +155,13 @@ class DataDosenController extends Controller
         $dosen->delete();
         return redirect()->route('admin.dosen.index')->with('success', 'Data dosen berhasil dihapus.');
     }
+
+    public function toggleStatus($id)
+{
+    $dosen = \App\Models\User::findOrFail($id);
+    $dosen->status = strtolower($dosen->status) == 'aktif' ? 'non-aktif' : 'aktif';
+    $dosen->save();
+
+    return redirect()->back()->with('success', 'Status dosen berhasil diperbarui.');
+}
 }

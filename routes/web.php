@@ -126,7 +126,9 @@ Route::middleware(['auth'])->group(function () {
         // CRUD & Import Dosen
         Route::resource('dosen', DataDosenController::class)->except(['show']);
         Route::post('dosen/import', [DataDosenController::class, 'importExcel'])->name('dosen.import');
-        
+        // TAMBAHKAN INI: Route khusus untuk ubah status (Hanya bisa diakses Admin)
+         Route::post('dosen/{id}/toggle-status', [DataDosenController::class, 'toggleStatus'])->name('dosen.toggleStatus');
+
         // CRUD & Import Pengelola
         Route::resource('pengelola', DataPengelolaController::class)->except(['show']);
         Route::post('pengelola/import', [DataPengelolaController::class, 'importExcel'])->name('pengelola.import');

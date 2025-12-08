@@ -23,6 +23,7 @@ class MahasiswaImport implements ToModel, WithHeadingRow
         return new User([
             'kode_admin' => $row['nim'],
             'name'       => $row['nama'],
+            'angkatan'   => $row['angkatan'],
             'email'      => $row['email'],
             'kelas'      => $row['kelas'],
             'kelompok'   => $row['kelompok'],

@@ -12,7 +12,6 @@ return new class extends Migration
     public function up()
 {
     Schema::table('users', function (Blueprint $table) {
-        $table->string('google_id')->nullable()->unique();
         $table->text('google_token')->nullable(); // simpan access token (JSON)
         $table->text('google_refresh_token')->nullable(); // refresh token
     });
