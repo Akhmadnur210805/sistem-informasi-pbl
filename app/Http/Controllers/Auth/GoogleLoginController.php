@@ -1,64 +1,57 @@
 <?php
 
-namespace App\Http\Controllers\Auth;
+namespace App\Http\Controllers\Auth; // <--- NAMESPACE HARUS INI
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Controller; // <--- WAJIB IMPORT INI
 use Illuminate\Http\Request;
-use Laravel\Socialite\Facades\Socialite; // Penting
-use App\Models\User;                      // Penting
-use Illuminate\Support\Facades\Auth;      // Penting
-use Illuminate\Support\Facades\Hash;      // Penting
-use Illuminate\Support\Str;                 // Penting
+use Laravel\Socialite\Facades\Socialite;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class GoogleLoginController extends Controller
 {
-    /**
-     * Mengarahkan pengguna ke halaman autentikasi Google.
-     */
     public function redirectToGoogle()
     {
         return Socialite::driver('google')->redirect();
     }
 
-    /**
-     * Mendapatkan informasi pengguna dari Google.
-     */
     public function handleGoogleCallback()
     {
         try {
-            // Ambil data user dari Google
             $googleUser = Socialite::driver('google')->user();
 
-            // Cek apakah user sudah ada di database berdasarkan email
+            // 1. Cari user berdasarkan Email
             $user = User::where('email', $googleUser->getEmail())->first();
 
             if ($user) {
-                // --- PENGGUNA DITEMUKAN ---
-                // Jika pengguna sudah ada, update google_id jika masih kosong
-                $user->update([
-                    'google_id' => $user->google_id ?? $googleUser->getId(),
-                ]);
+                // Jika user ada, update google_id biar sinkron
+                if (!$user->google_id) {
+                    $user->update(['google_id' => $googleUser->getId()]);
+                }
 
                 Auth::login($user);
-                return redirect()->intended('/dashboard_mahasiswa'); // Arahkan ke dashboard
+                
+                // Redirect langsung ke dashboard mahasiswa
+                return redirect('/dashboard_mahasiswa'); 
 
             } else {
-                // --- PENGGUNA TIDAK DITEMUKAN ---
-                // Jika pengguna tidak ada, buat pengguna baru
+                // Jika user tidak ada, buat baru
                 $newUser = User::create([
                     'name' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
-                    'password' => Hash::make(Str::random(24)) // Buat password acak yang aman
+                    'password' => Hash::make(Str::random(24)),
+                    'role' => 'mahasiswa' // Pastikan role default diset (opsional)
                 ]);
 
                 Auth::login($newUser);
-                return redirect()->intended('/dashboard_mahasiswa'); // Arahkan ke dashboard
+                return redirect('/dashboard_mahasiswa');
             }
 
         } catch (\Exception $e) {
-            // Jika terjadi error, kembalikan ke halaman login
-            return redirect('/login')->with('error', 'Login dengan Google gagal: ' . $e->getMessage());
+            return redirect('/login')->with('error', 'Login Google Gagal: ' . $e->getMessage());
         }
     }
 }

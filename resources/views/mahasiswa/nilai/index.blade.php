@@ -3,7 +3,7 @@
 @section('content-header')
     <div class="row">
         <div class="col-sm-6">
-            <h3 class="mb-0">Hasil Penilaian Studi</h3>
+            <h3 class="mb-0 fw-bold">Hasil Penilaian Studi</h3>
         </div>
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-end">
@@ -15,132 +15,95 @@
 @endsection
 
 @section('content')
-    
-    {{-- BAGIAN 1: TABEL RINCIAN NILAI INDIVIDU --}}
-    <div class="card card-outline card-primary mb-4">
-        <div class="card-header">
-            <h3 class="card-title"><i class="bi bi-journal-text me-2"></i>Rincian Nilai Mata Kuliah (Individu)</h3>
-        </div>
-        <div class="card-body p-0">
-            <table class="table table-hover table-striped align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th style="width: 5%">#</th>
-                        <th>Mata Kuliah</th>
-                        <th>Periode</th>
-                        <th class="text-center">Nilai Proyek</th>
-                        <th class="text-center">Nilai Presentasi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($nilais as $nilai)
-                        <tr>
-                            <td>{{ $loop->iteration }}</td>
-                            <td>
-                                <strong>{{ $nilai->mataKuliah->nama_mk }}</strong><br>
-                                <small class="text-muted">{{ $nilai->mataKuliah->kode_mk }} - {{ $nilai->mataKuliah->sks }} SKS</small>
-                            </td>
-                            <td>
-                                @if($nilai->periode == 'sebelum_uts')
-                                    <span class="badge bg-info text-dark">Sebelum UTS</span>
-                                @else
-                                    <span class="badge bg-primary">Setelah UTS</span>
-                                @endif
-                            </td>
-                            
-                            <td class="text-center">
-                                @if($nilai->nilai) <span class="fw-bold">{{ $nilai->nilai }}</span> @else <span class="text-muted">-</span> @endif
-                            </td>
 
-                            <td class="text-center">
-                                @if($nilai->nilai_presentasi) <span class="fw-bold">{{ $nilai->nilai_presentasi }}</span> @else <span class="text-muted">-</span> @endif
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="text-center py-4">Belum ada nilai yang dimasukkan oleh dosen.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="row">
-        {{-- BAGIAN 2: NILAI KELOMPOK (RATA-RATA) --}}
-        <div class="col-md-6">
-            <div class="card card-outline card-success h-100">
+    <div class="row justify-content-center">
+        
+        {{-- BAGIAN 1: NILAI KELOMPOK --}}
+        <div class="col-md-6 mb-4">
+            <div class="card card-outline card-success h-100 shadow-sm">
                 <div class="card-header">
                     <h3 class="card-title">
                         <i class="bi bi-people-fill me-2"></i>Nilai Kelompok 
-                        <small class="text-muted">(Rata-rata)</small>
                     </h3>
                 </div>
-                <div class="card-body">
-                    @if($nilaiKelompok)
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                Hasil Proyek (50%)
-                                <span class="badge bg-success rounded-pill fs-6">{{ number_format($nilaiKelompok['proyek'], 1) }}</span>
+                <div class="card-body d-flex flex-column justify-content-between">
+                    <div>
+                        <p class="text-muted mb-3">Komponen penilaian yang dihitung:</p>
+                        <ul class="list-group list-group-flush mb-4">
+                            <li class="list-group-item px-0">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i> Hasil Proyek <strong>(Bobot 50%)</strong>
                             </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                Kerja Sama (30%)
-                                <span class="badge bg-primary rounded-pill fs-6">{{ number_format($nilaiKelompok['kerjasama'], 1) }}</span>
+                            <li class="list-group-item px-0">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i> Kerja Sama Tim <strong>(Bobot 30%)</strong>
                             </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                Presentasi Kelompok (20%)
-                                <span class="badge bg-info rounded-pill fs-6">{{ number_format($nilaiKelompok['presentasi'], 1) }}</span>
+                            <li class="list-group-item px-0">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i> Presentasi Kelompok <strong>(Bobot 20%)</strong>
                             </li>
                         </ul>
-                        
-                        @php
-                            // Hitung Skor Akhir Kelompok (SAW)
-                            $skorKelompok = ($nilaiKelompok['proyek'] * 0.5) + 
-                                            ($nilaiKelompok['kerjasama'] * 0.3) + 
-                                            ($nilaiKelompok['presentasi'] * 0.2);
-                        @endphp
-                        <div class="alert alert-success mt-3 text-center mb-0">
-                            <strong>Skor Kelompok: {{ number_format($skorKelompok, 2) }}</strong>
+                    </div>
+                    
+                    @php
+                        // Logika Perhitungan (Tetap ada tapi tersembunyi)
+                        $nk_proyek     = $nilaiKelompok['proyek'] ?? 0;
+                        $nk_kerjasama  = $nilaiKelompok['kerjasama'] ?? 0;
+                        $nk_presentasi = $nilaiKelompok['presentasi'] ?? 0;
+
+                        // Hitung Skor Akhir Kelompok
+                        $skorKelompok = ($nk_proyek * 0.5) + ($nk_kerjasama * 0.3) + ($nk_presentasi * 0.2);
+                    @endphp
+
+                    @if($nilaiKelompok)
+                        <div class="alert alert-success text-center mb-0">
+                            <h6 class="text-uppercase ls-1 mb-1">Total Skor Kelompok</h6>
+                            <h1 class="fw-bold display-4 mb-0">{{ number_format($skorKelompok, 2) }}</h1>
                         </div>
                     @else
-                        <p class="text-center text-muted py-4">Belum ada nilai kelompok.</p>
+                        <div class="alert alert-secondary text-center mb-0">
+                            Nilai belum tersedia
+                        </div>
                     @endif
                 </div>
             </div>
         </div>
 
-        {{-- BAGIAN 3: SKOR AKHIR MAHASISWA (SAW) --}}
-        <div class="col-md-6">
-            <div class="card card-outline card-warning h-100">
+        {{-- BAGIAN 2: SKOR AKHIR MAHASISWA (RANKING) --}}
+        <div class="col-md-6 mb-4">
+            <div class="card card-outline card-warning h-100 shadow-sm">
                 <div class="card-header">
-                    <h3 class="card-title"><i class="bi bi-trophy-fill me-2"></i>Estimasi Skor Akhir (Ranking)</h3>
+                    <h3 class="card-title"><i class="bi bi-trophy-fill me-2"></i>Estimasi Skor Akhir</h3>
                 </div>
-                <div class="card-body">
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Rata-rata Nilai Matkul (50%)
-                            <span class="fw-bold">{{ number_format($avgIndividu['proyek'], 1) }}</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Rata-rata Presentasi Individu (20%)
-                            <span class="fw-bold">{{ number_format($avgIndividu['presentasi'], 1) }}</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Nilai Teman Sejawat (30%)
-                            <span class="fw-bold">{{ number_format($skorSejawat, 1) }} <small class="text-muted fw-normal">({{ number_format($avgRatingSejawat, 1) }}/5.0)</small></span>
-                        </li>
-                    </ul>
+                <div class="card-body d-flex flex-column justify-content-between">
+                    <div>
+                        <p class="text-muted mb-3">Komponen penilaian yang dihitung:</p>
+                        <ul class="list-group list-group-flush mb-4">
+                            <li class="list-group-item px-0">
+                                <i class="bi bi-check-circle-fill text-warning me-2"></i> Rata-rata Nilai Matkul <strong>(Bobot 50%)</strong>
+                            </li>
+                            <li class="list-group-item px-0">
+                                <i class="bi bi-check-circle-fill text-warning me-2"></i> Presentasi Individu <strong>(Bobot 20%)</strong>
+                            </li>
+                            <li class="list-group-item px-0">
+                                <i class="bi bi-check-circle-fill text-warning me-2"></i> Nilai Teman Sejawat <strong>(Bobot 30%)</strong>
+                            </li>
+                        </ul>
+                    </div>
 
                     @php
-                        // Hitung Skor Akhir Mahasiswa (SAW)
-                        $skorAkhir = ($avgIndividu['proyek'] * 0.50) + 
-                                     ($avgIndividu['presentasi'] * 0.20) + 
-                                     ($skorSejawat * 0.30);
+                        // Logika Perhitungan (Tetap ada tapi tersembunyi)
+                        $v_proyek     = $avgIndividu['proyek'] ?? 0;
+                        $v_presentasi = $avgIndividu['presentasi'] ?? 0;
+                        $v_sejawat    = $skorSejawat ?? 0;
+
+                        // Hitung Skor Akhir Mahasiswa
+                        $skorAkhir = ($v_proyek * 0.50) + 
+                                     ($v_presentasi * 0.20) + 
+                                     ($v_sejawat * 0.30);
                     @endphp
 
-                    <div class="alert alert-warning mt-3 text-center mb-0">
-                        <h3 class="fw-bold mb-0">{{ number_format($skorAkhir, 2) }}</h3>
-                        <small>Skor ini digunakan untuk penentuan Ranking Mahasiswa Terbaik</small>
+                    <div class="alert alert-warning text-center mb-0">
+                        <h6 class="text-uppercase ls-1 mb-1 text-muted">Total Skor Akhir</h6>
+                        <h1 class="fw-bold display-4 mb-0">{{ number_format($skorAkhir, 2) }}</h1>
+                        <small class="text-muted">Digunakan untuk penentuan Ranking</small>
                     </div>
                 </div>
             </div>

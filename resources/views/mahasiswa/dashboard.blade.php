@@ -1,64 +1,9 @@
 @extends('layout_mahasiswa.app')
 
-@section('styles')
-<style>
-    /* Styling Khusus Dashboard */
-    .welcome-card {
-        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
-        color: white;
-        border: none;
-        border-radius: 15px;
-    }
-    .stat-card {
-        border-radius: 15px;
-        border: none;
-        transition: transform 0.2s;
-    }
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    .calendar-date {
-        font-size: 4rem;
-        font-weight: bold;
-        line-height: 1;
-        color: #0d6efd;
-    }
-    .calendar-month {
-        font-size: 1.5rem;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-    }
-    .deadline-item {
-        border-left: 4px solid #ffc107;
-        background-color: #fff3cd;
-        padding: 10px;
-        margin-bottom: 10px;
-        border-radius: 4px;
-    }
-    .timeline-item {
-        padding-left: 20px;
-        border-left: 2px solid #e9ecef;
-        position: relative;
-        margin-bottom: 20px;
-    }
-    .timeline-item::before {
-        content: '';
-        width: 12px;
-        height: 12px;
-        background: #0d6efd;
-        border-radius: 50%;
-        position: absolute;
-        left: -7px;
-        top: 5px;
-    }
-</style>
-@endsection
-
 @section('content-header')
     <div class="row mb-2">
         <div class="col-sm-6">
-            <h3 class="mb-0 fw-bold text-dark">Dashboard Mahasiswa</h3>
+            <h3 class="m-0 fw-bold">Dashboard Project</h3>
         </div>
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-end">
@@ -71,152 +16,273 @@
 
 @section('content')
     
-    {{-- 1. WELCOME BANNER --}}
+    {{-- ALERT SYSTEM --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    {{-- WELCOME BANNER --}}
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card welcome-card shadow-sm">
+            <div class="card shadow-sm border-0" style="background: linear-gradient(120deg, #1e3c72 0%, #2a5298 100%); color: white; border-radius: 12px;">
                 <div class="card-body p-4">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h2 class="fw-bold">Halo, {{ $user->name }}! 👋</h2>
-                            <p class="lead mb-0 opacity-75">
-                                Semangat mengerjakan PBL! Jangan lupa mengisi Logbook minggu ini.
-                                <br>Kelompok Anda: <strong>{{ $user->kelompok ?? 'Belum ada' }}</strong> (Kelas {{ $user->kelas ?? '-' }})
-                            </p>
-                        </div>
-                        <div class="col-md-4 text-end d-none d-md-block">
-                            <i class="bi bi-mortarboard-fill" style="font-size: 5rem; opacity: 0.3;"></i>
-                        </div>
-                    </div>
+                    <h2 class="fw-bold"><i class="bi bi-kanban me-2"></i>Papan Kerja: {{ Auth::user()->name }}</h2>
+                    <p class="mb-0 opacity-75">
+                        Anda memiliki <strong>{{ $todo->count() + $process->count() }}</strong> tugas aktif. Tetap semangat!
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 
-    {{-- 2. STATISTIK CEPAT --}}
-    <div class="row mb-4">
-        <div class="col-md-4 col-sm-6 mb-3">
-            <div class="card stat-card bg-white shadow-sm h-100">
-                <div class="card-body d-flex align-items-center">
-                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
-                        <i class="bi bi-journal-text text-primary fs-3"></i>
-                    </div>
-                    <div>
-                        <h5 class="card-title text-muted mb-0">Logbook Terkumpul</h5>
-                        <h2 class="fw-bold mb-0">{{ $totalLogbook }}</h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 col-sm-6 mb-3">
-            <div class="card stat-card bg-white shadow-sm h-100">
-                <div class="card-body d-flex align-items-center">
-                    <div class="bg-success bg-opacity-10 p-3 rounded-circle me-3">
-                        <i class="bi bi-clipboard-check text-success fs-3"></i>
-                    </div>
-                    <div>
-                        <h5 class="card-title text-muted mb-0">Matkul Dinilai</h5>
-                        <h2 class="fw-bold mb-0">{{ $totalMatkulDinilai }} <small class="fs-6 text-muted">/ 4</small></h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 col-sm-12 mb-3">
-            <div class="card stat-card bg-white shadow-sm h-100">
-                <div class="card-body d-flex align-items-center">
-                    <div class="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
-                        <i class="bi bi-trophy text-warning fs-3"></i>
-                    </div>
-                    <div>
-                        <h5 class="card-title text-muted mb-0">Rata-rata Sementara</h5>
-                        <h2 class="fw-bold mb-0">{{ number_format($nilaiSementara, 1) }}</h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- 3. MAIN CONTENT AREA --}}
     <div class="row">
-        {{-- KOLOM KIRI: Kalender & Deadline --}}
-        <div class="col-lg-4 mb-4">
-            <div class="card shadow-sm text-center mb-4">
-                <div class="card-header bg-white border-0 pt-4">
-                    <h6 class="text-muted">HARI INI</h6>
-                </div>
-                <div class="card-body pt-0 pb-4">
-                    <div class="calendar-date">{{ date('d') }}</div>
-                    <div class="calendar-month text-primary">{{ date('F Y') }}</div>
-                    <hr>
-                    <p class="mb-0 text-muted"><i class="bi bi-clock me-1"></i> {{ date('l') }}</p>
+        
+        {{-- KOLOM KIRI: MENU & STATUS --}}
+        <div class="col-lg-3 mb-4">
+            {{-- Status Logbook --}}
+            <div class="card shadow-sm border-0 mb-3 text-center">
+                <div class="card-body py-4">
+                    <h6 class="fw-bold text-muted mb-3">LOGBOOK MINGGU INI</h6>
+                    
+                    @if($totalLogbook > 50) {{-- LOGIKA DUMMY (Sesuaikan dengan logic Anda) --}}
+                        <div class="btn btn-success btn-circle btn-lg mb-2 shadow-sm" style="width: 60px; height: 60px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-check-lg fs-1"></i>
+                        </div>
+                        <h5 class="fw-bold text-success">Terkirim</h5>
+                    @else
+                        <div class="position-relative d-inline-block mb-3">
+                            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+                        </div>
+                        <h5 class="fw-bold text-primary mb-3">Sedang Proses</h5>
+                        {{-- HAPUS: Keterangan Sisa Hari --}}
+                        <a href="{{ route('mahasiswa.logbook.index') }}" class="btn btn-primary btn-sm w-100 rounded-pill">Isi Sekarang</a>
+                    @endif
                 </div>
             </div>
 
-            <div class="card shadow-sm">
-                <div class="card-header bg-danger text-white">
-                    <h3 class="card-title"><i class="bi bi-alarm-fill me-2"></i> Deadline Terdekat</h3>
-                </div>
-                <div class="card-body">
-                    <div class="deadline-item">
-                        <strong>Pengumpulan Logbook Mingguan</strong>
-                        <br>
-                        <small class="text-dark">Batas: Minggu, {{ $deadlineTerdekat->format('d M Y') }} (23:59)</small>
-                        <div class="mt-2">
-                             @if($sisaHari <= 1)
-                                <span class="badge bg-danger">Sisa {{ $sisaHari }} Hari! Segera Kumpulkan</span>
-                            @else
-                                <span class="badge bg-warning text-dark">Sisa {{ $sisaHari }} Hari</span>
-                            @endif
-                        </div>
-                    </div>
-                    <div class="d-grid mt-3">
-                        <a href="{{ route('mahasiswa.logbook.index') }}" class="btn btn-sm btn-outline-danger">
-                            Upload Logbook Sekarang
-                        </a>
-                    </div>
-                </div>
+            {{-- Menu Shortcut (Fitur Cepat) --}}
+            <div class="list-group shadow-sm border-0">
+                <a href="{{ route('mahasiswa.nilai.index') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+                    <div><i class="bi bi-award text-warning me-2"></i> Nilai Studi</div>
+                    {{-- HAPUS: Badge Angka Total Nilai --}}
+                    <i class="bi bi-chevron-right text-muted small"></i>
+                </a>
+                <a href="{{ route('mahasiswa.ranking.index') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+                    <div><i class="bi bi-trophy text-danger me-2"></i> Skor Saya</div>
+                    {{-- HAPUS: Angka Skor --}}
+                    <i class="bi bi-chevron-right text-muted small"></i>
+                </a>
             </div>
         </div>
 
-        {{-- KOLOM KANAN: Timeline / Agenda --}}
-        <div class="col-lg-8">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-white">
-                    <h3 class="card-title"><i class="bi bi-list-task me-2"></i> Agenda Kegiatan PBL</h3>
-                </div>
-                <div class="card-body">
-                    <div class="timeline-box">
-                        {{-- Item 1 --}}
-                        <div class="timeline-item">
-                            <span class="text-muted small">Minggu 1-4</span>
-                            <h6 class="fw-bold mt-1">Perencanaan & Analisis</h6>
-                            <p class="text-muted small mb-0">Fokus pada penyusunan proposal, pembagian kelompok, dan analisis kebutuhan sistem.</p>
-                        </div>
-                        
-                        {{-- Item 2 (Aktif) --}}
-                        <div class="timeline-item">
-                            <span class="badge bg-primary mb-1">SEKARANG</span>
-                            <h6 class="fw-bold mt-1 text-primary">Implementasi & Pembuatan Produk</h6>
-                            <p class="text-muted small mb-0">Pengembangan aplikasi, coding, dan pengisian logbook mingguan secara rutin.</p>
-                        </div>
+        {{-- KOLOM KANAN: KANBAN BOARD --}}
+        <div class="col-lg-9">
+            
+            {{-- Header & Tombol Tambah --}}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold m-0"><i class="bi bi-layout-three-columns me-2"></i>Aktivitas Proyek</h5>
+                <button class="btn btn-primary btn-sm shadow-sm" data-bs-toggle="modal" data-bs-target="#modalTambahAgenda">
+                    <i class="bi bi-plus-lg me-1"></i> Tambah Tugas
+                </button>
+            </div>
 
-                        {{-- Item 3 --}}
-                        <div class="timeline-item">
-                            <span class="text-muted small">Minggu 12-14</span>
-                            <h6 class="fw-bold mt-1">Pengujian & Evaluasi</h6>
-                            <p class="text-muted small mb-0">Testing aplikasi, penilaian teman sejawat, dan persiapan presentasi akhir.</p>
+            <div class="row g-3">
+                
+                {{-- 1. KOLOM RENCANA (TODO) --}}
+                <div class="col-md-4">
+                    <div class="card bg-light border-0 h-100 rounded-3">
+                        <div class="card-header bg-transparent fw-bold text-secondary border-0 d-flex justify-content-between">
+                            <span><i class="bi bi-circle me-1"></i> RENCANA</span>
+                            <span class="badge bg-secondary rounded-pill">{{ $todo->count() }}</span>
                         </div>
+                        <div class="card-body p-2 custom-scrollbar" style="max-height: 500px; overflow-y: auto;">
+                            
+                            @forelse($todo as $item)
+                                <div class="card border-0 shadow-sm mb-2 kanban-card">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="badge {{ $item->prioritas == 'penting' ? 'bg-danger' : 'bg-secondary' }}" style="font-size: 10px;">
+                                                {{ strtoupper($item->prioritas) }}
+                                            </span>
+                                            
+                                            {{-- Tombol Hapus --}}
+                                            <form action="{{ route('mahasiswa.agenda.delete', $item->id) }}" method="POST" onsubmit="return confirm('Hapus rencana ini?');">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="btn btn-link text-muted p-0" style="font-size: 12px;"><i class="bi bi-x-lg"></i></button>
+                                            </form>
+                                        </div>
 
-                         {{-- Item 4 --}}
-                         <div class="timeline-item border-0">
-                            <span class="text-muted small">Minggu 16</span>
-                            <h6 class="fw-bold mt-1">Presentasi Akhir (EXPO)</h6>
-                            <p class="text-muted small mb-0">Pameran produk PBL dan penilaian akhir oleh dosen penguji.</p>
+                                        <h6 class="fw-bold text-dark mb-1">{{ $item->judul }}</h6>
+                                        <p class="small text-muted mb-3">{{ Str::limit($item->deskripsi, 40) }}</p>
+
+                                        {{-- Tombol Geser ke Proses --}}
+                                        <form action="{{ route('mahasiswa.agenda.updateStatus', $item->id) }}" method="POST">
+                                            @csrf @method('PATCH')
+                                            <input type="hidden" name="status" value="process">
+                                            <button type="submit" class="btn btn-outline-primary btn-sm w-100">
+                                                <i class="bi bi-arrow-right-circle me-1"></i> Kerjakan
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center py-4 text-muted opacity-50">
+                                    <i class="bi bi-clipboard fs-2 mb-2"></i>
+                                    <p class="small mb-0">Belum ada rencana</p>
+                                </div>
+                            @endforelse
+
                         </div>
                     </div>
                 </div>
+
+                {{-- 2. KOLOM PROSES (PROCESS) --}}
+                <div class="col-md-4">
+                    <div class="card border-0 h-100 rounded-3" style="background-color: #ebf5ff;"> 
+                        <div class="card-header bg-transparent fw-bold text-primary border-0 d-flex justify-content-between">
+                            <span><i class="bi bi-arrow-repeat me-1 spin-icon"></i> PROSES</span>
+                            <span class="badge bg-primary rounded-pill">{{ $process->count() }}</span>
+                        </div>
+                        <div class="card-body p-2 custom-scrollbar" style="max-height: 500px; overflow-y: auto;">
+                            
+                            @forelse($process as $item)
+                                <div class="card border-0 shadow-sm mb-2 kanban-card border-start border-4 border-primary">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="badge bg-primary">ON GOING</span>
+                                            @if($item->deadline)
+                                                <small class="text-dark fw-bold" style="font-size: 10px;">
+                                                    <i class="bi bi-clock"></i> {{ \Carbon\Carbon::parse($item->deadline)->format('d M') }}
+                                                </small>
+                                            @endif
+                                        </div>
+
+                                        <h6 class="fw-bold text-dark mb-2">{{ $item->judul }}</h6>
+                                        
+                                        {{-- Tombol Geser ke Selesai --}}
+                                        <form action="{{ route('mahasiswa.agenda.updateStatus', $item->id) }}" method="POST">
+                                            @csrf @method('PATCH')
+                                            <input type="hidden" name="status" value="done">
+                                            <button type="submit" class="btn btn-success btn-sm w-100 text-white mb-2 shadow-sm">
+                                                <i class="bi bi-check-lg me-1"></i> Selesai
+                                            </button>
+                                        </form>
+                                        
+                                        {{-- Tombol Batal --}}
+                                        <form action="{{ route('mahasiswa.agenda.updateStatus', $item->id) }}" method="POST" class="text-center">
+                                            @csrf @method('PATCH')
+                                            <input type="hidden" name="status" value="todo">
+                                            <button type="submit" class="btn btn-link btn-sm text-muted p-0 text-decoration-none" style="font-size: 11px;">
+                                                Batal
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center py-4 text-muted opacity-50">
+                                    <i class="bi bi-bicycle fs-2 mb-2"></i>
+                                    <p class="small mb-0">Kosong</p>
+                                </div>
+                            @endforelse
+
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 3. KOLOM SELESAI (DONE) --}}
+                <div class="col-md-4">
+                    <div class="card border-0 h-100 rounded-3" style="background-color: #f0fff4;">
+                        <div class="card-header bg-transparent fw-bold text-success border-0 d-flex justify-content-between">
+                            <span><i class="bi bi-check-circle-fill me-1"></i> SELESAI</span>
+                            <span class="badge bg-success rounded-pill">{{ $done->count() }}</span>
+                        </div>
+                        <div class="card-body p-2 custom-scrollbar" style="max-height: 500px; overflow-y: auto;">
+                            
+                            @forelse($done as $item)
+                                <div class="card border-0 shadow-sm mb-2 kanban-card opacity-75">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between">
+                                            <h6 class="fw-bold text-muted text-decoration-line-through mb-1">{{ $item->judul }}</h6>
+                                            {{-- Hapus Permanen --}}
+                                            <form action="{{ route('mahasiswa.agenda.delete', $item->id) }}" method="POST" onsubmit="return confirm('Hapus histori ini?');">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="btn btn-link text-danger p-0"><i class="bi bi-trash"></i></button>
+                                            </form>
+                                        </div>
+                                        <small class="text-success d-block mt-1"><i class="bi bi-check-all"></i> Selesai</small>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center py-4 text-muted opacity-50">
+                                    <i class="bi bi-archive fs-2 mb-2"></i>
+                                    <p class="small mb-0">Kosong</p>
+                                </div>
+                            @endforelse
+
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
+
+    {{-- MODAL TAMBAH AGENDA --}}
+    <div class="modal fade" id="modalTambahAgenda" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Tambah Tugas Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('mahasiswa.agenda.store') }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Judul Tugas</label>
+                            <input type="text" name="judul" class="form-control" placeholder="Contoh: Buat ERD Database" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Deskripsi</label>
+                            <textarea name="deskripsi" class="form-control" rows="3" placeholder="Detail tugas..."></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Deadline</label>
+                                <input type="date" name="deadline" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Prioritas</label>
+                                <select name="prioritas" class="form-select">
+                                    <option value="biasa">Biasa</option>
+                                    <option value="penting">Penting / Mendesak</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {{-- CSS CUSTOM --}}
+    <style>
+        .kanban-card { transition: transform 0.2s, box-shadow 0.2s; cursor: default; }
+        .kanban-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important; }
+        .spin-icon { animation: spin 4s linear infinite; display: inline-block; }
+        @keyframes spin { 100% { transform:rotate(360deg); } }
+        /* Scrollbar Halus */
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
+    </style>
 
 @endsection
