@@ -6,36 +6,30 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('kode_admin')->unique()->nullable();
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-
-            // --- PERUBAHAN UNTUK GOOGLE LOGIN ---
-            $table->string('password')->nullable(); // Titik koma (;) sudah diperbaiki
-            $table->string('google_id')->nullable(); // Kolom baru untuk Google ID
-            // -------------------------------------
-
-            $table->string('role')->default('mahasiswa');
-
-            // KOLOM YANG SUDAH ADA
-            $table->string('kelas')->nullable();
-            $table->string('kelompok')->nullable();
-            $table->string('status')->nullable(); // Status untuk Dosen
-            $table->string('jenis_pengelola')->nullable(); // Jenis untuk Pengelola
-
+            
+            // Password dibuat nullable agar login Google tidak error
+            $table->string('password')->nullable();
+            
+            // --- KOLOM KHUSUS SISTEM BAZNAS ---
+            // NIK diatur 16 karakter sesuai standar KTP Indonesia
+            $table->string('nik', 16)->nullable()->unique(); 
+            $table->string('no_hp', 15)->nullable();
+            $table->text('alamat')->nullable();
+            
+            // Role untuk pembagian hak akses sistem SIMPATIK
+            $table->enum('role', ['mustahik', 'petugas', 'pimpinan'])->default('mustahik');
+            
             $table->rememberToken();
             $table->timestamps();
         });
 
-        // Bagian di bawah ini sudah benar, biarkan saja
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
@@ -52,9 +46,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('users');

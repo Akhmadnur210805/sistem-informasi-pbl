@@ -3,122 +3,78 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
-    public function showLoginForm(): View
+    public function showLogin(): View
     {
         return view('login');
     }
 
-    public function showRegisterForm(): View
+    public function showRegister(): View
     {
         return view('register');
     }
 
+    /**
+     * Proses Login dengan Pengalihan Role yang Presisi
+     */
+    public function login(Request $request): RedirectResponse
+    {
+        // 1. Validasi input
+        $credentials = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        // 2. Coba autentikasi
+        if (Auth::attempt($credentials)) {
+            // Regenerasi session untuk keamanan (mencegah session fixation)
+            $request->session()->regenerate();
+            
+            $user = Auth::user();
+            
+            // 3. Pengalihan berdasarkan role
+            if ($user->role === 'petugas') {
+                return redirect()->intended(route('petugas.dashboard'));
+            }
+            
+            if ($user->role === 'pimpinan') {
+                return redirect()->intended(route('pimpinan.dashboard'));
+            }
+            
+            // Default untuk mustahik
+            return redirect()->intended(route('mustahik.dashboard'));
+        }
+
+        // Jika gagal, kembali dengan pesan error yang sesuai di view
+        return back()->with('error', 'Email atau Password salah!')->withInput($request->only('email'));
+    }
+
+    /**
+     * Proses Registrasi (Hanya untuk Mustahik secara Default)
+     */
     public function register(Request $request): RedirectResponse
     {
         $request->validate([
-            'kode_admin' => ['required', 'string', 'max:255', 'unique:users'],
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users', 'ends_with:@mhs.politala.ac.id'],
-            'password' => ['required', 'string', 'min:5'],
-        ], [
-            'email.ends_with' => 'Registrasi hanya diizinkan untuk email @mhs.politala.ac.id.'
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
-        $user = User::create([
-            'kode_admin' => $request->kode_admin,
+        User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'mahasiswa',
+            'role' => 'mustahik', // Pendaftaran umum selalu mustahik
         ]);
 
-        Auth::login($user);
-        return redirect()->intended('/dashboard_mahasiswa');
-    }
-
-    public function login(Request $request): RedirectResponse
-    {
-        $credentials = $request->validate([
-            'email' => ['required', 'email'],
-            'password' => ['required'],
-        ]);
-
-
-        $email = $credentials['email'];
-        $allowedDomains = ['@mhs.politala.ac.id', '@politala.ac.id'];
-        $specialEmails = ['admin@example.com'];
-
-        if (!Str::endsWith($email, $allowedDomains) && !in_array($email, $specialEmails)) {
-            return back()->withErrors([
-                'email' => 'Domain email Anda tidak diizinkan untuk login.',
-            ])->onlyInput('email');
-        }
-
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            $user = Auth::user();
-
-            switch ($user->role) {
-                case 'admin':
-                    return redirect()->intended('/dashboard_admin');
-                case 'dosen':
-                    return redirect()->intended('/dashboard_dosen');
-                case 'mahasiswa':
-                    return redirect()->intended('/dashboard_mahasiswa');
-                case 'pengelola':
-                    return redirect()->intended('/dashboard_pengelola');
-                default:
-                    Auth::logout();
-                    return redirect('/login');
-            }
-        }
-
-        return back()->withErrors([
-            'email' => 'Email atau kata sandi yang Anda masukkan salah.',
-        ])->onlyInput('email');
-    }
-
-    public function redirectToGoogle()
-    {
-        return Socialite::driver('google')->redirect();
-    }
-
-    public function handleGoogleCallback()
-    {
-        try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
-            $email = $googleUser->getEmail();
-
-            if (!Str::endsWith($email, '@mhs.politala.ac.id')) {
-                return redirect('/login')->withErrors(['email' => 'Login via Google hanya untuk mahasiswa (@mhs.politala.ac.id).']);
-            }
-
-            $user = User::updateOrCreate(
-                ['email' => $email],
-                [
-                    'name' => $googleUser->getName(),
-                    'google_id' => $googleUser->getId(),
-                    'password' => Hash::make(Str::random(24)),
-                    'role' => 'mahasiswa'
-                ]
-            );
-
-            Auth::login($user, true);
-            return redirect()->intended('/dashboard_mahasiswa');
-
-        } catch (\Exception $e) {
-            return redirect('/login')->withErrors(['email' => 'Gagal melakukan otentikasi dengan Google.']);
-        }
+        return redirect()->route('login')->with('success', 'Pendaftaran berhasil! Silakan login.');
     }
 
     public function logout(Request $request): RedirectResponse
@@ -126,9 +82,6 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/login');
+        return redirect()->route('login');
     }
 }
-
-
-

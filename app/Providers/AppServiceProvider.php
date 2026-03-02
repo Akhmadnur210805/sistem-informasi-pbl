@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator; // Tambahkan ini agar pagination rapi
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Menggunakan Bootstrap 5 untuk pagination agar sesuai dengan desain hijau Anda
+        Paginator::useBootstrapFive();
     }
 }

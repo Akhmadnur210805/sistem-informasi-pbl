@@ -1,168 +1,82 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
-// --- 1. IMPORT SEMUA CONTROLLER ---
-
-// Auth Controllers
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Auth\GoogleLoginController; // <--- Namespace Auth yang Benar
+use App\Http\Controllers\MustahikController;
+use App\Http\Controllers\PetugasController;
+use App\Http\Controllers\PimpinanController;
+use App\Http\Controllers\KategoriBantuanController;
 
-// Dashboard Controllers
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\DosenDashboardController;
-use App\Http\Controllers\MahasiswaController;
-use App\Http\Controllers\PengelolaDashboardController;
+/*
+|--------------------------------------------------------------------------
+| Web Routes - SIMPATIK BAZNAS (VERSI MASTER FINAL)
+|--------------------------------------------------------------------------
+*/
 
-// Admin Data Master Controllers
-use App\Http\Controllers\DataDosenController;
-use App\Http\Controllers\DataKelompokController;
-use App\Http\Controllers\DataMahasiswaController;
-use App\Http\Controllers\DataMataKuliahController;
-use App\Http\Controllers\DataPengelolaController;
-
-// Dosen Feature Controllers
-use App\Http\Controllers\DosenPenilaianController;
-use App\Http\Controllers\DosenPenilaianKelompokController;
-use App\Http\Controllers\DosenRekapController;
-
-// Mahasiswa Feature Controllers
-use App\Http\Controllers\LogbookController;
-use App\Http\Controllers\PeerReviewController;
-use App\Http\Controllers\MahasiswaNilaiController;
-
-// General/Shared Controllers
-use App\Http\Controllers\RankingController;
-use App\Http\Controllers\RekapNilaiController;
-use App\Http\Controllers\PengelolaViewController;
-
-
-// ====================================================
-// 2. RUTE PUBLIK (Authentication)
-// ====================================================
-
-// Redirect root ke login
-Route::get('/', function () {
-    return redirect('/login');
+// --- GRUP TAMU (GUEST) ---
+Route::middleware(['guest'])->group(function () {
+    
+    // Auth Manual
+    Route::get('/', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login/manual', [AuthController::class, 'login'])->name('login.manual');
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
+    
+    // Auth Google
+    Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
+    Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 });
 
-// Login & Register Manual
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
-// --- LOGIN GOOGLE (PERBAIKAN) ---
-// Menggunakan controller dari folder Auth dan URL yang sesuai .env
-Route::get('google/redirect', [GoogleLoginController::class, 'redirectToGoogle'])->name('google.login');
-Route::get('google/callback', [GoogleLoginController::class, 'handleGoogleCallback'])->name('google.callback');
-
-
-// ====================================================
-// 3. RUTE TERAUTENTIKASI (Middleware Auth)
-// ====================================================
+// --- GRUP TERAUTENTIKASI (WAJIB LOGIN) ---
 Route::middleware(['auth'])->group(function () {
 
-    // --- DASHBOARD UTAMA (Berdasarkan Role) ---
-    Route::get('/dashboard_admin', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::get('/dashboard_dosen', [DosenDashboardController::class, 'index'])->name('dosen.dashboard');
-    Route::get('/dashboard_mahasiswa', [MahasiswaController::class, 'index'])->name('mahasiswa.dashboard');
-    Route::get('/dashboard_pengelola', [PengelolaDashboardController::class, 'index'])->name('pengelola.dashboard');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-
-    // ------------------------------------------------
-    // GRUP MAHASISWA
-    // ------------------------------------------------
-    Route::prefix('mahasiswa')->name('mahasiswa.')->group(function() {
-        // Logbook Mingguan
-        Route::get('/logbook', [LogbookController::class, 'index'])->name('logbook.index');
-        Route::post('/logbook', [LogbookController::class, 'store'])->name('logbook.store');
+    // --- AREA KHUSUS MUSTAHIK ---
+    Route::prefix('mustahik')->group(function () {
+        Route::get('/dashboard', [MustahikController::class, 'dashboard'])->name('mustahik.dashboard');
         
-        // Penilaian Teman Sejawat
-        Route::get('/penilaian-sejawat', [PeerReviewController::class, 'index'])->name('penilaian_sejawat.index');
-        Route::post('/penilaian-sejawat', [PeerReviewController::class, 'store'])->name('penilaian_sejawat.store');
-        
-        // Hasil Studi & Ranking
-        Route::get('/hasil-penilaian', [MahasiswaNilaiController::class, 'index'])->name('nilai.index');
-        Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index');
+        // Operasional Pengajuan
+        Route::get('/ajukan-bantuan/{id}', [MustahikController::class, 'createPengajuan'])->name('mustahik.pengajuan.create');
+        Route::post('/ajukan-bantuan/simpan', [MustahikController::class, 'storePengajuan'])->name('mustahik.pengajuan.store');
+        Route::get('/riwayat-pengajuan', [MustahikController::class, 'riwayat'])->name('mustahik.riwayat');
+        Route::get('/riwayat-pengajuan/detail/{id}', [MustahikController::class, 'showDetail'])->name('mustahik.pengajuan.detail');
 
-        // --- FITUR AGENDA / KANBAN BOARD (BARU) ---
-        // Simpan Agenda Baru
-        Route::post('/agenda', [MahasiswaController::class, 'storeAgenda'])->name('agenda.store');
-        // Update Status (Pindah Kolom Rencana -> Proses -> Selesai)
-        Route::patch('/agenda/{id}/status', [MahasiswaController::class, 'updateStatus'])->name('agenda.updateStatus');
-        // Hapus Agenda
-        Route::delete('/agenda/{id}', [MahasiswaController::class, 'deleteAgenda'])->name('agenda.delete');
+        // Fitur Informasi
+        Route::get('/tentang-baznas', [MustahikController::class, 'about'])->name('mustahik.about');
     });
 
-
-    // ------------------------------------------------
-    // GRUP DOSEN
-    // ------------------------------------------------
-    Route::prefix('dosen')->name('dosen.')->group(function() {
-        // Data Kelompok
-        Route::get('/kelompok', [DataKelompokController::class, 'index'])->name('kelompok.index');
+    // --- AREA KHUSUS PETUGAS ---
+    Route::prefix('petugas')->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [PetugasController::class, 'dashboard'])->name('petugas.dashboard');
         
-        // Penilaian Individu
-        Route::get('/penilaian', [DosenPenilaianController::class, 'index'])->name('penilaian.index');
-        Route::get('/penilaian/{matakuliah}/{kelas}', [DosenPenilaianController::class, 'showPenilaianForm'])->name('penilaian.form');
-        Route::post('/penilaian/{matakuliah}/{kelas}', [DosenPenilaianController::class, 'storePenilaian'])->name('penilaian.store');
+        // --- FITUR: KELOLA MUSTAHIK ---
+        // Pastikan link di sidebar mengarah ke 'petugas.mustahik.index'
+        Route::get('/kelola-mustahik', [PetugasController::class, 'indexMustahik'])->name('petugas.mustahik.index');
+        Route::get('/kelola-mustahik/detail/{id}', [PetugasController::class, 'showMustahik'])->name('petugas.mustahik.show');
+        Route::delete('/kelola-mustahik/hapus/{id}', [PetugasController::class, 'destroyMustahik'])->name('petugas.mustahik.destroy');
         
-        // Penilaian Kelompok
-        Route::get('/penilaian-kelompok', [DosenPenilaianKelompokController::class, 'index'])->name('penilaian_kelompok.index');
-        Route::post('/penilaian-kelompok', [DosenPenilaianKelompokController::class, 'store'])->name('penilaian_kelompok.store');
+        // --- FITUR: VERIFIKASI & LOG ---
+        Route::get('/verifikasi-pengajuan', [PetugasController::class, 'indexVerifikasi'])->name('petugas.verifikasi.index');
+        Route::get('/verifikasi-pengajuan/detail/{id}', [PetugasController::class, 'showVerifikasi'])->name('petugas.verifikasi.show');
+        Route::post('/verifikasi-pengajuan/proses/{id}', [PetugasController::class, 'prosesVerifikasi'])->name('petugas.verifikasi.proses');
+        Route::get('/log-pengajuan', [PetugasController::class, 'logPengajuan'])->name('petugas.log.index');
 
-        // Rekapitulasi & Monitoring
-        Route::get('/rekap-logbook', [DosenRekapController::class, 'rekapLogbook'])->name('rekap.logbook');
-        Route::get('/rekap-penilaian-sejawat', [DosenRekapController::class, 'rekapPenilaianSejawat'])->name('rekap.penilaian_sejawat');
-        Route::get('/rekap-penilaian-sejawat/{id}', [DosenRekapController::class, 'rekapPenilaianSejawatDetail'])->name('rekap.penilaian_sejawat_detail');
+        // Fitur Inovasi (Cetak PDF)
+        Route::get('/verifikasi-pengajuan/download/{id}', [PetugasController::class, 'downloadProfil'])->name('petugas.pengajuan.download');
 
-        // Ranking
-        Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index');
+        // --- DATA MASTER: KATEGORI BANTUAN ---
+        Route::get('/kategori-bantuan', [KategoriBantuanController::class, 'index'])->name('petugas.kategori.index');
+        Route::get('/kategori-bantuan/tambah', [KategoriBantuanController::class, 'create'])->name('petugas.kategori.create');
+        Route::post('/kategori-bantuan/simpan', [KategoriBantuanController::class, 'store'])->name('petugas.kategori.store');
+        Route::get('/kategori-bantuan/edit/{id}', [KategoriBantuanController::class, 'edit'])->name('petugas.kategori.edit');
+        Route::put('/kategori-bantuan/update/{id}', [KategoriBantuanController::class, 'update'])->name('petugas.kategori.update');
+        Route::delete('/kategori-bantuan/hapus/{id}', [KategoriBantuanController::class, 'destroy'])->name('petugas.kategori.destroy');
     });
 
-
-    // ------------------------------------------------
-    // GRUP PENGELOLA
-    // ------------------------------------------------
-    Route::prefix('pengelola')->name('pengelola.')->group(function() {
-        // View Data
-        Route::get('/data-mahasiswa', [PengelolaViewController::class, 'showMahasiswa'])->name('mahasiswa.index');
-        Route::get('/data-dosen', [PengelolaViewController::class, 'showDosen'])->name('dosen.index');
-        
-        // Rekap Nilai Akhir (SAW) & Export PDF
-        Route::get('/rekap-nilai', [RekapNilaiController::class, 'index'])->name('rekap_nilai.index');
-        Route::get('/rekap-nilai/download', [RekapNilaiController::class, 'downloadPDF'])->name('rekap_nilai.download');
-
-        Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index');
-    });
-
-
-    // ------------------------------------------------
-    // GRUP ADMIN (Data Master)
-    // ------------------------------------------------
-    Route::prefix('admin')->name('admin.')->group(function () {
-        // CRUD & Import Mahasiswa
-        Route::resource('mahasiswa', DataMahasiswaController::class)->except(['show']);
-        Route::post('mahasiswa/import', [DataMahasiswaController::class, 'importExcel'])->name('mahasiswa.import');
-        
-        // CRUD & Import Dosen
-        Route::resource('dosen', DataDosenController::class)->except(['show']);
-        Route::post('dosen/import', [DataDosenController::class, 'importExcel'])->name('dosen.import');
-        // Fitur Toggle Status Aktif Dosen
-        Route::post('dosen/{id}/toggle-status', [DataDosenController::class, 'toggleStatus'])->name('dosen.toggleStatus');
-        
-        // CRUD & Import Pengelola
-        Route::resource('pengelola', DataPengelolaController::class)->except(['show']);
-        Route::post('pengelola/import', [DataPengelolaController::class, 'importExcel'])->name('pengelola.import');
-        
-        // CRUD & Import Mata Kuliah
-        Route::resource('matakuliah', DataMataKuliahController::class)->except(['show']);
-        Route::post('matakuliah/import', [DataMataKuliahController::class, 'importExcel'])->name('matakuliah.import');
-        
-        // Lainnya
-        Route::get('/kelompok', [DataKelompokController::class, 'index'])->name('kelompok.index');
-        Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index');
+    // --- AREA KHUSUS PIMPINAN ---
+    Route::prefix('pimpinan')->group(function () {
+        Route::get('/dashboard', [PimpinanController::class, 'dashboard'])->name('pimpinan.dashboard');
     });
 });
