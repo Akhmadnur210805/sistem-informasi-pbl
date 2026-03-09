@@ -52,9 +52,41 @@
             border-top: 6px solid #1e5128; 
         }
 
+        /* ========================================= */
+        /* CSS KHUSUS TOMBOL KEMBALI */
+        /* ========================================= */
+        .btn-back {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #6c757d;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .btn-back i {
+            margin-right: 5px;
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-back:hover {
+            color: #1e5128;
+        }
+
+        .btn-back:hover i {
+            transform: translateX(-4px);
+        }
+        /* ========================================= */
+
         .logo-container {
             width: 100px;
-            margin: 0 auto 20px;
+            margin: 10px auto 20px; /* Ditambah margin top sedikit agar tidak menabrak tombol kembali */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -158,6 +190,11 @@
 </head>
 <body>
     <div class="login-box shadow-lg">
+        
+        <a href="{{ route('landing') }}" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
+
         <div class="logo-container">
             <img src="{{ asset('images/baznas12.png') }}" alt="Logo BAZNAS">
         </div>

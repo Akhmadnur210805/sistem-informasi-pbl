@@ -6,6 +6,10 @@ use App\Http\Controllers\MustahikController;
 use App\Http\Controllers\PetugasController;
 use App\Http\Controllers\PimpinanController;
 use App\Http\Controllers\KategoriBantuanController;
+use App\Http\Controllers\LandingController;
+
+// TAMBAHAN WAJIB: Panggil GoogleLoginController yang ada di folder Auth
+use App\Http\Controllers\Auth\GoogleLoginController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,60 +17,80 @@ use App\Http\Controllers\KategoriBantuanController;
 |--------------------------------------------------------------------------
 */
 
-// --- GRUP TAMU (GUEST) ---
+// ==========================================
+// 0. HALAMAN UTAMA PUBLIK (LANDING PAGE)
+// ==========================================
+Route::get('/', [LandingController::class, 'index'])->name('landing');
+
+
+// ==========================================
+// 1. GRUP TAMU (Belum Login)
+// ==========================================
 Route::middleware(['guest'])->group(function () {
     
     // Auth Manual
-    Route::get('/', [AuthController::class, 'showLogin'])->name('login');
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login/manual', [AuthController::class, 'login'])->name('login.manual');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
     
-    // Auth Google
-    Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.login');
-    Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
+    // ==========================================
+    // PERBAIKAN: Arahkan Auth Google ke GoogleLoginController
+    // ==========================================
+    Route::get('/auth/google', [GoogleLoginController::class, 'redirectToGoogle'])->name('google.login');
+    Route::get('/auth/google/callback', [GoogleLoginController::class, 'handleGoogleCallback']);
 });
 
-// --- GRUP TERAUTENTIKASI (WAJIB LOGIN) ---
+
+// ==========================================
+// 2. GRUP PENGGUNA TERAUTENTIKASI (Sudah Login)
+// ==========================================
 Route::middleware(['auth'])->group(function () {
 
+    // Global Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // --- AREA KHUSUS MUSTAHIK ---
+    // ------------------------------------------
+    // A. AREA MUSTAHIK (Penerima Manfaat)
+    // ------------------------------------------
     Route::prefix('mustahik')->group(function () {
         Route::get('/dashboard', [MustahikController::class, 'dashboard'])->name('mustahik.dashboard');
         
-        // Operasional Pengajuan
+        // Form Dinamis Pengajuan
         Route::get('/ajukan-bantuan/{id}', [MustahikController::class, 'createPengajuan'])->name('mustahik.pengajuan.create');
         Route::post('/ajukan-bantuan/simpan', [MustahikController::class, 'storePengajuan'])->name('mustahik.pengajuan.store');
+        
+        // Riwayat
         Route::get('/riwayat-pengajuan', [MustahikController::class, 'riwayat'])->name('mustahik.riwayat');
         Route::get('/riwayat-pengajuan/detail/{id}', [MustahikController::class, 'showDetail'])->name('mustahik.pengajuan.detail');
 
-        // Fitur Informasi
-        Route::get('/tentang-baznas', [MustahikController::class, 'about'])->name('mustahik.about');
+        // ==========================================
+        // RUTE PROFIL PENGGUNA
+        // ==========================================
+        Route::get('/profil', [MustahikController::class, 'profil'])->name('mustahik.profil');
     });
 
-    // --- AREA KHUSUS PETUGAS ---
+    // ------------------------------------------
+    // B. AREA PETUGAS (Admin Verifikator)
+    // ------------------------------------------
     Route::prefix('petugas')->group(function () {
-        // Dashboard
         Route::get('/dashboard', [PetugasController::class, 'dashboard'])->name('petugas.dashboard');
         
-        // --- FITUR: KELOLA MUSTAHIK ---
-        // Pastikan link di sidebar mengarah ke 'petugas.mustahik.index'
+        // Kelola Mustahik
         Route::get('/kelola-mustahik', [PetugasController::class, 'indexMustahik'])->name('petugas.mustahik.index');
         Route::get('/kelola-mustahik/detail/{id}', [PetugasController::class, 'showMustahik'])->name('petugas.mustahik.show');
         Route::delete('/kelola-mustahik/hapus/{id}', [PetugasController::class, 'destroyMustahik'])->name('petugas.mustahik.destroy');
         
-        // --- FITUR: VERIFIKASI & LOG ---
+        // Verifikasi & Log
         Route::get('/verifikasi-pengajuan', [PetugasController::class, 'indexVerifikasi'])->name('petugas.verifikasi.index');
         Route::get('/verifikasi-pengajuan/detail/{id}', [PetugasController::class, 'showVerifikasi'])->name('petugas.verifikasi.show');
         Route::post('/verifikasi-pengajuan/proses/{id}', [PetugasController::class, 'prosesVerifikasi'])->name('petugas.verifikasi.proses');
         Route::get('/log-pengajuan', [PetugasController::class, 'logPengajuan'])->name('petugas.log.index');
 
-        // Fitur Inovasi (Cetak PDF)
+        // Cetak PDF
         Route::get('/verifikasi-pengajuan/download/{id}', [PetugasController::class, 'downloadProfil'])->name('petugas.pengajuan.download');
 
-        // --- DATA MASTER: KATEGORI BANTUAN ---
+        // Data Master: Kategori Bantuan
         Route::get('/kategori-bantuan', [KategoriBantuanController::class, 'index'])->name('petugas.kategori.index');
         Route::get('/kategori-bantuan/tambah', [KategoriBantuanController::class, 'create'])->name('petugas.kategori.create');
         Route::post('/kategori-bantuan/simpan', [KategoriBantuanController::class, 'store'])->name('petugas.kategori.store');
@@ -75,8 +99,15 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/kategori-bantuan/hapus/{id}', [KategoriBantuanController::class, 'destroy'])->name('petugas.kategori.destroy');
     });
 
-    // --- AREA KHUSUS PIMPINAN ---
+    // ------------------------------------------
+    // C. AREA PIMPINAN (Monitoring & Laporan)
+    // ------------------------------------------
     Route::prefix('pimpinan')->group(function () {
         Route::get('/dashboard', [PimpinanController::class, 'dashboard'])->name('pimpinan.dashboard');
+        
+        // Tambahan Rute Baru untuk Fitur Laporan Pimpinan
+        Route::get('/laporan', [PimpinanController::class, 'indexLaporan'])->name('pimpinan.laporan.index');
+        Route::post('/laporan/cetak', [PimpinanController::class, 'cetakLaporan'])->name('pimpinan.laporan.cetak');
     });
+
 });

@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
+// Tambahan library wajib untuk Google SSO
+use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Str;
+
 class AuthController extends Controller
 {
     public function showLogin(): View
@@ -37,6 +41,7 @@ class AuthController extends Controller
             // Regenerasi session untuk keamanan (mencegah session fixation)
             $request->session()->regenerate();
             
+            /** @var \App\Models\User $user */
             $user = Auth::user();
             
             // 3. Pengalihan berdasarkan role
@@ -61,16 +66,18 @@ class AuthController extends Controller
      */
     public function register(Request $request): RedirectResponse
     {
-        $request->validate([
+        // SIMPAN HASIL VALIDASI KE DALAM VARIABEL $validated
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
+        // GUNAKAN $validated ARRAY AGAR INTELEPHENSE TIDAK ERROR
         User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
             'role' => 'mustahik', // Pendaftaran umum selalu mustahik
         ]);
 
@@ -82,6 +89,59 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        
         return redirect()->route('login');
+    }
+
+    // ==========================================
+    // FITUR LOGIN GOOGLE (SSO)
+    // ==========================================
+
+    /**
+     * Mengarahkan pengguna ke halaman persetujuan Google
+     */
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+
+    /**
+     * Menerima respon balik (callback) dari Google setelah pengguna menyetujui
+     */
+    public function handleGoogleCallback()
+    {
+        try {
+            // Ambil data user dari Google
+            $googleUser = Socialite::driver('google')->user();
+
+            // Cek apakah email user sudah terdaftar di database kita
+            $user = User::where('email', $googleUser->getEmail())->first();
+
+            // Jika belum terdaftar, buat akun baru secara otomatis
+            if (!$user) {
+                $user = User::create([
+                    'name' => $googleUser->getName(),
+                    'email' => $googleUser->getEmail(),
+                    'password' => Hash::make(Str::random(16)), // Password acak yang aman
+                    'role' => 'mustahik', // Set default role
+                ]);
+            }
+
+            // Autentikasi/Login-kan user tersebut
+            Auth::login($user);
+
+            // Arahkan ke dashboard berdasarkan role (sama seperti fungsi login manual)
+            if ($user->role === 'petugas') {
+                return redirect()->route('petugas.dashboard');
+            } elseif ($user->role === 'pimpinan') {
+                return redirect()->route('pimpinan.dashboard');
+            } else {
+                return redirect()->route('mustahik.dashboard')->with('success', 'Berhasil masuk dengan Google!');
+            }
+
+        } catch (\Exception $e) {
+            // Jika terjadi kesalahan (misal pengguna membatalkan proses)
+            return redirect()->route('login')->with('error', 'Gagal masuk menggunakan Google. Silakan coba lagi.');
+        }
     }
 }

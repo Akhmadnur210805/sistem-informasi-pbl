@@ -9,13 +9,18 @@ class KategoriBantuan extends Model
 {
     use HasFactory;
 
-    // Menentukan nama tabel secara eksplisit (opsional tapi aman)
     protected $table = 'kategori_bantuans';
 
-    // Mengizinkan field ini untuk diisi melalui form
+    // Tambahkan 'jenis_form' ke dalam array ini
     protected $fillable = [
         'nama_bantuan',
         'deskripsi',
+        'jenis_form', // <--- INI YANG BARU DITAMBAHKAN
         'is_active',
     ];
+
+    public function pengajuans()
+    {
+        return $this->hasMany(Pengajuan::class);
+    }
 }

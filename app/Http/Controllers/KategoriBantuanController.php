@@ -23,15 +23,19 @@ class KategoriBantuanController extends Controller
     // Simpan Data Baru
     public function store(Request $request)
     {
+        // 1. Tambahkan validasi jenis_form
         $request->validate([
             'nama_bantuan' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
+            'jenis_form'   => 'required|string', 
+            'deskripsi'    => 'nullable|string',
         ]);
 
+        // 2. Simpan jenis_form ke database
         KategoriBantuan::create([
             'nama_bantuan' => $request->nama_bantuan,
-            'deskripsi' => $request->deskripsi,
-            'is_active' => true,
+            'jenis_form'   => $request->jenis_form, 
+            'deskripsi'    => $request->deskripsi,
+            'is_active'    => true,
         ]);
 
         return redirect()->route('petugas.kategori.index')->with('success', 'Kategori bantuan berhasil ditambahkan!');
@@ -47,17 +51,22 @@ class KategoriBantuanController extends Controller
     // Proses Update Data
     public function update(Request $request, $id)
     {
+        // 1. Tambahkan validasi jenis_form
         $request->validate([
             'nama_bantuan' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'is_active' => 'required|boolean',
+            'jenis_form'   => 'required|string', 
+            'deskripsi'    => 'nullable|string',
+            'is_active'    => 'required|boolean',
         ]);
 
         $kategori = KategoriBantuan::findOrFail($id);
+        
+        // 2. Update jenis_form ke database
         $kategori->update([
             'nama_bantuan' => $request->nama_bantuan,
-            'deskripsi' => $request->deskripsi,
-            'is_active' => $request->is_active,
+            'jenis_form'   => $request->jenis_form, 
+            'deskripsi'    => $request->deskripsi,
+            'is_active'    => $request->is_active,
         ]);
 
         return redirect()->route('petugas.kategori.index')->with('success', 'Kategori bantuan berhasil diperbarui!');

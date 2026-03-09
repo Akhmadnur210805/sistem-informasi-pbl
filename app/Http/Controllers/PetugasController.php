@@ -144,24 +144,24 @@ class PetugasController extends Controller
      */
     public function prosesVerifikasi(Request $request, $id)
     {
+        // PERBAIKAN: Sesuaikan dengan name="catatan" dari form HTML
         $request->validate([
             'status' => 'required|in:disetujui,ditolak',
-            'keterangan_petugas' => 'required|string|min:10'
-        ], [
-            'keterangan_petugas.required' => 'Wajib memberikan catatan alasan verifikasi.',
-            'keterangan_petugas.min' => 'Catatan minimal berisi 10 karakter.'
+            'catatan' => 'nullable|string' 
         ]);
 
         $pengajuan = Pengajuan::findOrFail($id);
         
+        // Update data ke database
         $pengajuan->update([
             'status' => $request->status,
-            'keterangan_petugas' => $request->keterangan_petugas,
+            'keterangan_petugas' => $request->catatan, // Isi database 'keterangan_petugas' dengan input 'catatan'
             'updated_at' => now(),
         ]);
 
-        return redirect()->route('petugas.log.index')
-                         ->with('success', 'Verifikasi Berhasil! Data telah dipindahkan ke Log Riwayat.');
+        // Arahkan kembali ke halaman index verifikasi agar petugas bisa lanjut memverifikasi yang lain
+        return redirect()->route('petugas.verifikasi.index')
+                         ->with('success', 'Verifikasi Berhasil! Status pengajuan telah diubah menjadi ' . strtoupper($request->status) . '.');
     }
 
     /**
