@@ -1,6 +1,7 @@
 <aside class="main-sidebar sidebar-dark-success elevation-4" style="background-color: #1e5128;">
     
-    <a href="{{ route('mustahik.dashboard') }}" class="brand-link border-bottom border-success border-opacity-50 d-flex flex-column align-items-center py-4 text-decoration-none">
+    {{-- Brand Logo --}}
+    <a href="{{ route('pimpinan.dashboard') }}" class="brand-link border-bottom border-success border-opacity-50 d-flex flex-column align-items-center py-4 text-decoration-none">
         <div class="bg-white rounded-circle p-2 mb-2 shadow-sm d-flex align-items-center justify-content-center" style="width: 65px; height: 65px;">
             <img src="{{ asset('images/BAZNASTALA.png') }}" alt="Logo BAZNAS" class="img-fluid" style="object-fit: contain;">
         </div>
@@ -11,29 +12,34 @@
         <nav class="mt-4">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 
-                <li class="nav-header text-uppercase small opacity-50 text-white mb-2" style="letter-spacing: 1px;">Menu Utama</li>
+                {{-- Bagian Menu Utama --}}
+                <li class="nav-header text-uppercase small opacity-50 text-white mb-2" style="letter-spacing: 1px;">Menu Pimpinan</li>
                 
                 <li class="nav-item mb-1">
-                    <a href="{{ route('mustahik.dashboard') }}" class="nav-link {{ request()->routeIs('mustahik.dashboard') ? 'active bg-success' : '' }}">
+                    <a href="{{ route('pimpinan.dashboard') }}" class="nav-link {{ request()->routeIs('pimpinan.dashboard') ? 'active bg-success' : '' }}">
                         <i class="nav-icon bi bi-grid-1x2-fill"></i>
                         <p>Halaman Utama</p>
                     </a>
                 </li>
 
+                {{-- Bagian Monitoring Data Sesuai Gambar Anda --}}
+                <li class="nav-header text-uppercase small opacity-50 text-white mt-3 mb-2" style="letter-spacing: 1px;">Monitoring Data</li>
+
                 <li class="nav-item mb-1">
-                    <a href="{{ route('mustahik.riwayat') }}" class="nav-link {{ request()->routeIs('mustahik.riwayat') ? 'active bg-success' : '' }}">
-                        <i class="nav-icon bi bi-clock-history"></i>
-                        <p>Riwayat Pengajuan</p>
+                    <a href="{{ route('pimpinan.mustahik.index') }}" class="nav-link {{ request()->routeIs('pimpinan.mustahik.*') ? 'active bg-success' : '' }}">
+                        <i class="nav-icon bi bi-people-fill"></i>
+                        <p>Data Mustahik</p>
                     </a>
                 </li>
 
                 <li class="nav-item mb-1">
-                    <a href="{{ route('mustahik.profil') }}" class="nav-link {{ request()->routeIs('mustahik.profil') ? 'active bg-success' : '' }}">
-                        <i class="nav-icon bi bi-person-circle"></i>
-                        <p>Profil Akun</p>
+                    <a href="{{ route('pimpinan.laporan.index') }}" class="nav-link {{ request()->routeIs('pimpinan.laporan.*') ? 'active bg-success' : '' }}">
+                        <i class="nav-icon bi bi-file-earmark-pdf-fill"></i>
+                        <p>Laporan Pengajuan</p>
                     </a>
                 </li>
 
+                {{-- Bagian Sistem --}}
                 <li class="nav-header text-uppercase small opacity-50 text-white mt-4 mb-2" style="letter-spacing: 1px;">Sistem</li>
 
                 <li class="nav-item">

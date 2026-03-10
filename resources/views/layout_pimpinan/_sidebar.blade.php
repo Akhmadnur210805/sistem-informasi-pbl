@@ -26,13 +26,13 @@
         </li>
 
         <li class="nav-item mb-2">
-            <a href="#" class="nav-link text-white px-3 py-2 rounded-3 d-flex align-items-center opacity-75 hover-opacity-100" title="Sedang dalam pengembangan">
+            <a href="{{ route('pimpinan.mustahik.index') }}" class="nav-link text-white px-3 py-2 rounded-3 d-flex align-items-center {{ request()->routeIs('pimpinan.mustahik.*') ? 'bg-success bg-opacity-25 fw-bold border-start border-4 border-warning' : 'opacity-75 hover-opacity-100' }}">
                 <i class="bi bi-people-fill me-3 fs-5"></i> Data Mustahik
             </a>
         </li>
 
         <li class="nav-item mb-2">
-            <a href="#" class="nav-link text-white px-3 py-2 rounded-3 d-flex align-items-center opacity-75 hover-opacity-100" title="Sedang dalam pengembangan">
+            <a href="{{ route('pimpinan.log.index') }}" class="nav-link text-white px-3 py-2 rounded-3 d-flex align-items-center {{ request()->routeIs('pimpinan.log.*') ? 'bg-success bg-opacity-25 fw-bold border-start border-4 border-warning' : 'opacity-75 hover-opacity-100' }}">
                 <i class="bi bi-activity me-3 fs-5"></i> Log Aktivitas Petugas
             </a>
         </li>
@@ -47,8 +47,9 @@
             </a>
         </li>
 
+        {{-- UPDATE: Menu Pengaturan Akun Sekarang Sudah Aktif --}}
         <li class="nav-item mb-2 mt-2">
-            <a href="#" class="nav-link text-white px-3 py-2 rounded-3 d-flex align-items-center opacity-75 hover-opacity-100">
+            <a href="{{ route('pimpinan.pengaturan.index') }}" class="nav-link text-white px-3 py-2 rounded-3 d-flex align-items-center {{ request()->routeIs('pimpinan.pengaturan.*') ? 'bg-success bg-opacity-25 fw-bold border-start border-4 border-warning' : 'opacity-75 hover-opacity-100' }}">
                 <i class="bi bi-gear-fill me-3 fs-5"></i> Pengaturan Akun
             </a>
         </li>
@@ -69,7 +70,7 @@
     .nav-link.hover-opacity-100:hover {
         opacity: 1 !important;
         background-color: rgba(255, 255, 255, 0.08);
-        transform: translateX(4px); /* Efek menggeser sedikit ke kanan saat disorot */
+        transform: translateX(4px);
     }
     
     /* Efek Hover Animasi pada Logo */
@@ -81,8 +82,6 @@
         box-shadow: 0 10px 25px rgba(0,0,0,0.2) !important;
     }
     
-    /* Memastikan sidebar bisa di-scroll jika menu terlalu banyak, 
-       tapi menyembunyikan scrollbar agar tetap elegan */
     #sidebar .list-unstyled {
         height: calc(100vh - 280px);
         overflow-y: auto;

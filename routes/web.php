@@ -7,8 +7,6 @@ use App\Http\Controllers\PetugasController;
 use App\Http\Controllers\PimpinanController;
 use App\Http\Controllers\KategoriBantuanController;
 use App\Http\Controllers\LandingController;
-
-// TAMBAHAN WAJIB: Panggil GoogleLoginController yang ada di folder Auth
 use App\Http\Controllers\Auth\GoogleLoginController;
 
 /*
@@ -34,9 +32,7 @@ Route::middleware(['guest'])->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.submit');
     
-    // ==========================================
-    // PERBAIKAN: Arahkan Auth Google ke GoogleLoginController
-    // ==========================================
+    // Auth Google
     Route::get('/auth/google', [GoogleLoginController::class, 'redirectToGoogle'])->name('google.login');
     Route::get('/auth/google/callback', [GoogleLoginController::class, 'handleGoogleCallback']);
 });
@@ -53,61 +49,69 @@ Route::middleware(['auth'])->group(function () {
     // ------------------------------------------
     // A. AREA MUSTAHIK (Penerima Manfaat)
     // ------------------------------------------
-    Route::prefix('mustahik')->group(function () {
-        Route::get('/dashboard', [MustahikController::class, 'dashboard'])->name('mustahik.dashboard');
+    Route::prefix('mustahik')->name('mustahik.')->group(function () {
+        Route::get('/dashboard', [MustahikController::class, 'dashboard'])->name('dashboard');
         
         // Form Dinamis Pengajuan
-        Route::get('/ajukan-bantuan/{id}', [MustahikController::class, 'createPengajuan'])->name('mustahik.pengajuan.create');
-        Route::post('/ajukan-bantuan/simpan', [MustahikController::class, 'storePengajuan'])->name('mustahik.pengajuan.store');
+        Route::get('/ajukan-bantuan/{id}', [MustahikController::class, 'createPengajuan'])->name('pengajuan.create');
+        Route::post('/ajukan-bantuan/simpan', [MustahikController::class, 'storePengajuan'])->name('pengajuan.store');
         
         // Riwayat
-        Route::get('/riwayat-pengajuan', [MustahikController::class, 'riwayat'])->name('mustahik.riwayat');
-        Route::get('/riwayat-pengajuan/detail/{id}', [MustahikController::class, 'showDetail'])->name('mustahik.pengajuan.detail');
+        Route::get('/riwayat-pengajuan', [MustahikController::class, 'riwayat'])->name('riwayat');
+        Route::get('/riwayat-pengajuan/detail/{id}', [MustahikController::class, 'showDetail'])->name('pengajuan.detail');
 
-        // ==========================================
-        // RUTE PROFIL PENGGUNA
-        // ==========================================
-        Route::get('/profil', [MustahikController::class, 'profil'])->name('mustahik.profil');
+        // Profil
+        Route::get('/profil', [MustahikController::class, 'profil'])->name('profil');
     });
 
     // ------------------------------------------
     // B. AREA PETUGAS (Admin Verifikator)
     // ------------------------------------------
-    Route::prefix('petugas')->group(function () {
-        Route::get('/dashboard', [PetugasController::class, 'dashboard'])->name('petugas.dashboard');
+    Route::prefix('petugas')->name('petugas.')->group(function () {
+        Route::get('/dashboard', [PetugasController::class, 'dashboard'])->name('dashboard');
         
-        // Kelola Mustahik
-        Route::get('/kelola-mustahik', [PetugasController::class, 'indexMustahik'])->name('petugas.mustahik.index');
-        Route::get('/kelola-mustahik/detail/{id}', [PetugasController::class, 'showMustahik'])->name('petugas.mustahik.show');
-        Route::delete('/kelola-mustahik/hapus/{id}', [PetugasController::class, 'destroyMustahik'])->name('petugas.mustahik.destroy');
+        // Kelola Mustahik (Admin)
+        Route::get('/kelola-mustahik', [PetugasController::class, 'indexMustahik'])->name('mustahik.index');
+        Route::get('/kelola-mustahik/detail/{id}', [PetugasController::class, 'showMustahik'])->name('mustahik.show');
+        Route::delete('/kelola-mustahik/hapus/{id}', [PetugasController::class, 'destroyMustahik'])->name('mustahik.destroy');
         
         // Verifikasi & Log
-        Route::get('/verifikasi-pengajuan', [PetugasController::class, 'indexVerifikasi'])->name('petugas.verifikasi.index');
-        Route::get('/verifikasi-pengajuan/detail/{id}', [PetugasController::class, 'showVerifikasi'])->name('petugas.verifikasi.show');
-        Route::post('/verifikasi-pengajuan/proses/{id}', [PetugasController::class, 'prosesVerifikasi'])->name('petugas.verifikasi.proses');
-        Route::get('/log-pengajuan', [PetugasController::class, 'logPengajuan'])->name('petugas.log.index');
+        Route::get('/verifikasi-pengajuan', [PetugasController::class, 'indexVerifikasi'])->name('verifikasi.index');
+        Route::get('/verifikasi-pengajuan/detail/{id}', [PetugasController::class, 'showVerifikasi'])->name('verifikasi.show');
+        Route::post('/verifikasi-pengajuan/proses/{id}', [PetugasController::class, 'prosesVerifikasi'])->name('verifikasi.proses');
+        Route::get('/log-pengajuan', [PetugasController::class, 'logPengajuan'])->name('log.index');
 
         // Cetak PDF
-        Route::get('/verifikasi-pengajuan/download/{id}', [PetugasController::class, 'downloadProfil'])->name('petugas.pengajuan.download');
+        Route::get('/verifikasi-pengajuan/download/{id}', [PetugasController::class, 'downloadProfil'])->name('pengajuan.download');
 
         // Data Master: Kategori Bantuan
-        Route::get('/kategori-bantuan', [KategoriBantuanController::class, 'index'])->name('petugas.kategori.index');
-        Route::get('/kategori-bantuan/tambah', [KategoriBantuanController::class, 'create'])->name('petugas.kategori.create');
-        Route::post('/kategori-bantuan/simpan', [KategoriBantuanController::class, 'store'])->name('petugas.kategori.store');
-        Route::get('/kategori-bantuan/edit/{id}', [KategoriBantuanController::class, 'edit'])->name('petugas.kategori.edit');
-        Route::put('/kategori-bantuan/update/{id}', [KategoriBantuanController::class, 'update'])->name('petugas.kategori.update');
-        Route::delete('/kategori-bantuan/hapus/{id}', [KategoriBantuanController::class, 'destroy'])->name('petugas.kategori.destroy');
+        Route::get('/kategori-bantuan', [KategoriBantuanController::class, 'index'])->name('kategori.index');
+        Route::get('/kategori-bantuan/tambah', [KategoriBantuanController::class, 'create'])->name('kategori.create');
+        Route::post('/kategori-bantuan/simpan', [KategoriBantuanController::class, 'store'])->name('kategori.store');
+        Route::get('/kategori-bantuan/edit/{id}', [KategoriBantuanController::class, 'edit'])->name('kategori.edit');
+        Route::put('/kategori-bantuan/update/{id}', [KategoriBantuanController::class, 'update'])->name('kategori.update');
+        Route::delete('/kategori-bantuan/hapus/{id}', [KategoriBantuanController::class, 'destroy'])->name('kategori.destroy');
     });
 
     // ------------------------------------------
     // C. AREA PIMPINAN (Monitoring & Laporan)
     // ------------------------------------------
-    Route::prefix('pimpinan')->group(function () {
-        Route::get('/dashboard', [PimpinanController::class, 'dashboard'])->name('pimpinan.dashboard');
+    Route::prefix('pimpinan')->name('pimpinan.')->group(function () {
+        Route::get('/dashboard', [PimpinanController::class, 'dashboard'])->name('dashboard');
         
-        // Tambahan Rute Baru untuk Fitur Laporan Pimpinan
-        Route::get('/laporan', [PimpinanController::class, 'indexLaporan'])->name('pimpinan.laporan.index');
-        Route::post('/laporan/cetak', [PimpinanController::class, 'cetakLaporan'])->name('pimpinan.laporan.cetak');
+        // Rute Fitur Laporan Pimpinan
+        Route::get('/laporan', [PimpinanController::class, 'indexLaporan'])->name('laporan.index');
+        Route::post('/laporan/cetak', [PimpinanController::class, 'cetakLaporan'])->name('laporan.cetak');
+
+        // Rute Fitur Pantau Data Mustahik
+        Route::get('/data-mustahik', [PimpinanController::class, 'indexMustahik'])->name('mustahik.index');
+
+        // Rute Fitur Log Aktivitas Petugas
+        Route::get('/log-aktivitas', [PimpinanController::class, 'logAktivitas'])->name('log.index');
+
+        // Rute Fitur Pengaturan Akun (Tampilan & Simpan)
+        Route::get('/pengaturan', [PimpinanController::class, 'pengaturanAkun'])->name('pengaturan.index');
+        Route::post('/pengaturan/update', [PimpinanController::class, 'updatePengaturan'])->name('pengaturan.update');
     });
 
 });
