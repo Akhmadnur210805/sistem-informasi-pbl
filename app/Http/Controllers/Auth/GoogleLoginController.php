@@ -13,13 +13,15 @@ class GoogleLoginController extends Controller
 {
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        // Tambahkan stateless() untuk menghindari error session (InvalidStateException) di localhost
+        return Socialite::driver('google')->stateless()->redirect();
     }
 
     public function handleGoogleCallback()
     {
         try {
-            $googleUser = Socialite::driver('google')->user();
+            // Tambahkan stateless() di sini juga
+            $googleUser = Socialite::driver('google')->stateless()->user();
 
             // 1. Cari user berdasarkan Email di database
             $user = User::where('email', $googleUser->getEmail())->first();
@@ -35,12 +37,12 @@ class GoogleLoginController extends Controller
                 
             } else {
                 // Jika user BELUM ADA, buat akun pendaftar baru
-                $user = User::create([ // <-- Menggunakan variabel $user agar konsisten
+                $user = User::create([ 
                     'name' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
                     'password' => Hash::make(Str::random(24)),
-                    'role' => 'mustahik' // <-- Default user baru otomatis menjadi Mustahik
+                    'role' => 'mustahik' // Default user baru otomatis menjadi Mustahik
                 ]);
 
                 // Login user yang baru saja dibuat
@@ -48,7 +50,6 @@ class GoogleLoginController extends Controller
             }
 
             // 2. CEK ROLE USER SETELAH BERHASIL LOGIN UNTUK REDIRECT
-            // Logika ini ditaruh di luar if/else agar berlaku untuk user lama maupun user baru
             $loggedInUser = Auth::user();
 
             if ($loggedInUser->role === 'petugas') {
@@ -61,8 +62,8 @@ class GoogleLoginController extends Controller
             }
 
         } catch (\Exception $e) {
-            // Jika terjadi error saat menarik data dari Google, kembalikan ke halaman login
-            return redirect('/')->with('error', 'Login Google gagal, silakan coba lagi.');
+            // JANGAN REDIRECT DULU. Tampilkan error aslinya agar kita tahu penyebab pastinya!
+            dd('GAGAL LOGIN GOOGLE. Alasan Error: ' . $e->getMessage());
         }
     }
 }

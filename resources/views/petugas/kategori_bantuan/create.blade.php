@@ -18,7 +18,7 @@
                         
                         <div class="mb-4">
                             <label class="fw-bold text-success mb-2"><i class="bi bi-bookmark-fill me-2"></i>Nama Kategori Bantuan</label>
-                            <input type="text" name="nama_bantuan" class="form-control" placeholder="Contoh: BAZNAS Sehat" required>
+                            <input type="text" name="nama_bantuan" class="form-control" placeholder="Contoh: Program Ekonomi" required>
                             <small class="text-muted">Gunakan nama yang jelas untuk memudahkan Mustahik.</small>
                         </div>
 

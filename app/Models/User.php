@@ -50,7 +50,6 @@ class User extends Authenticatable
     /**
      * Relasi ke model Pengajuan.
      * Satu User (Mustahik) bisa memiliki banyak Pengajuan bantuan.
-     * Ini sangat penting agar 'withCount(pengajuans)' di PetugasController berfungsi.
      */
     public function pengajuans(): HasMany
     {

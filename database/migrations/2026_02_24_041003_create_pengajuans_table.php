@@ -10,27 +10,34 @@ return new class extends Migration
     {
         Schema::create('pengajuans', function (Blueprint $table) {
             $table->id();
-            // Relasi ke tabel users (Mustahik)
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             
-            // Relasi ke kategori bantuan
+            // Relasi
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('kategori_bantuan_id')->constrained('kategori_bantuans')->onDelete('cascade');
             
-            // Kode unik pengajuan (Contoh: BZ-20260225-001)
+            // Data Utama
             $table->string('nomor_pengajuan')->unique();
+            $table->string('nama_lengkap')->nullable();
+            $table->string('jenis_kelamin')->nullable();
+            $table->string('tempat_lahir')->nullable();
+            $table->date('tanggal_lahir')->nullable();
+            $table->text('alamat_ktp')->nullable();
+            $table->string('penghasilan_bulanan')->nullable();
+            $table->integer('jumlah_tanggungan')->nullable()->default(0);
+            $table->string('pendidikan_terakhir')->nullable();
+            $table->string('pekerjaan')->nullable();
+            $table->string('titik_koordinat')->nullable();
+            $table->text('deskripsi_kondisi')->nullable();
             
-            // Data isian form ekonomi
-            $table->integer('penghasilan_bulanan');
-            $table->integer('jumlah_tanggungan');
-            $table->text('deskripsi_kondisi');
+            // Kolom File (WAJIB NULLABLE agar form yang tidak mewajibkan KK/SKTM tidak error database)
+            $table->string('pas_foto')->nullable();
+            $table->string('file_ktp')->nullable();
+            $table->string('file_kk')->nullable();
+            $table->string('file_sktm')->nullable();
+            $table->string('file_pendukung')->nullable();
             
-            // Kolom untuk upload file (KTP/KK/SKTM dalam satu PDF atau Gambar)
-            $table->string('berkas_pendukung')->nullable();
-            
-            // Status pengajuan
+            // Status & Catatan Petugas
             $table->enum('status', ['menunggu', 'diproses', 'disetujui', 'ditolak'])->default('menunggu');
-            
-            // Catatan dari petugas
             $table->text('pesan_petugas')->nullable();
             
             $table->timestamps();

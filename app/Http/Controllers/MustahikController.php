@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\KategoriBantuan;
 use App\Models\Pengajuan;
+use App\Mail\PengajuanBerhasilMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -163,7 +165,8 @@ class MustahikController extends Controller
             $deskripsi = $request->input('deskripsi_kondisi');
         }
 
-        Pengajuan::create([
+        // TAMPUNG HASIL CREATE KE DALAM VARIABEL $pengajuan
+        $pengajuan = Pengajuan::create([
             'user_id'             => $user->id,
             'kategori_bantuan_id' => $kategoriId,
             'nomor_pengajuan'     => $nomor_pengajuan,
@@ -185,6 +188,17 @@ class MustahikController extends Controller
             'file_sktm'           => $sktmPath,
             'status'              => 'menunggu',
         ]);
+
+        // ==========================================
+        // 3. PROSES PENGIRIMAN EMAIL NOTIFIKASI
+        // ==========================================
+        try {
+            Mail::to($user->email)->send(new PengajuanBerhasilMail($pengajuan));
+        } catch (\Exception $e) {
+            // MATIKAN SILENT ERROR SEMENTARA
+            // Tampilkan error aslinya agar kita tahu masalah di SMTP Gmail-nya
+            dd('GAGAL KIRIM EMAIL. Alasan: ' . $e->getMessage());
+        }
 
         return redirect()->route('mustahik.riwayat')
             ->with('success', 'Pengajuan berhasil dikirim! Nomor Resi: ' . $nomor_pengajuan);
