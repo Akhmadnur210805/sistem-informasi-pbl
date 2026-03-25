@@ -82,22 +82,30 @@ class PimpinanController extends Controller
     {
         $user = User::find(auth()->user()->id);
 
+        // Validasi input dengan pesan kustom bahasa Indonesia
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|min:8|confirmed',
+        ], [
+            'name.required' => 'Nama lengkap tidak boleh kosong.',
+            'email.required' => 'Alamat email tidak boleh kosong.',
+            'email.unique' => 'Email ini sudah digunakan oleh pengguna lain.',
+            'password.min' => 'Password baru minimal harus 8 karakter.',
+            'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
         $user->name = $request->name;
         $user->email = $request->email;
 
+        // Hanya update password jika kolom password diisi
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
         }
 
         $user->save();
 
-        return redirect()->back()->with('success', 'Profil dan keamanan akun berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Profil dan keamanan akun Anda berhasil diperbarui!');
     }
 
     /**
